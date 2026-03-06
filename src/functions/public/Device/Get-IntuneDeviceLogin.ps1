@@ -28,9 +28,9 @@
     Gets logged-on user info for the specified device.
 
     .EXAMPLE
-    "PC-001","PC-002" | Get-IntuneDeviceLogin -DeviceName
+    Get-IntuneDeviceLogin -DeviceName "PC-001"
 
-    Resolves the two device names and returns logged-on user info for all matches.
+    Resolves the device name and returns logged-on user info for the match.
 
     .INPUTS
     System.String (DeviceId via -DeviceId, or DeviceName via -DeviceName with ValueFromPipeline/PropertyName)
