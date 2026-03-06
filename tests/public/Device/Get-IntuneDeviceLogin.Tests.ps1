@@ -17,10 +17,15 @@ BeforeAll {
 Describe 'Get-IntuneDeviceLogin' {
     Context 'When called with DeviceId parameter set' {
         BeforeEach {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testDeviceId = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testDeviceName = 'DEVICE-001'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserPrincipalName = 'user@contoso.com'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testLastLogonDateTime = '2024-03-05T10:30:00Z'
         }
 
@@ -200,9 +205,13 @@ Describe 'Get-IntuneDeviceLogin' {
 
     Context 'When called with DeviceName parameter set' {
         BeforeEach {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testDeviceId = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testDeviceName = 'DEVICE-001'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserPrincipalName = 'user@contoso.com'
         }
 

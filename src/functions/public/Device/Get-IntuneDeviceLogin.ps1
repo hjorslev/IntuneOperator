@@ -11,8 +11,8 @@
     Requires an authenticated Graph session with appropriate scopes.
 
     Scopes (minimum):
-      - DeviceManagementManagedDevices.Read.All
-      - User.Read.All
+        - DeviceManagementManagedDevices.Read.All
+        - User.Read.All
 
     .PARAMETER DeviceId
     The Intune managed device identifier (GUID). Parameter set: ById.
@@ -37,11 +37,11 @@
 
     .OUTPUTS
     PSCustomObject with:
-      - DeviceId (string)
-      - DeviceName (string)
-      - UserId (string)
-      - UserPrincipalName (string)
-      - LastLogonDateTime (datetime)
+        - DeviceId (string)
+        - DeviceName (string)
+        - UserId (string)
+        - UserPrincipalName (string)
+        - LastLogonDateTime (datetime)
 
     .NOTES
     Author: fhn.it & ChatGPT
@@ -73,10 +73,6 @@
         [Alias('Name', 'ComputerName')]
         [string]$DeviceName
     )
-
-    begin {
-        $baseUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
-    }
 
     process {
         switch ($PSCmdlet.ParameterSetName) {

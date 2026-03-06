@@ -47,14 +47,14 @@
         # deviceName is case-insensitive in OData. Exact match.
         $encoded = [uri]::EscapeDataString("deviceName eq '$Name'")
         $uri = "$baseUri`?`$filter=$encoded"
-        
+
         $resp = Invoke-GraphGet -Uri $uri
-        
+
         if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
             Write-Verbose "No managed devices found with deviceName '$Name'."
             return @()
         }
-        
+
         return $resp.value
     }
 }
