@@ -12,8 +12,8 @@ This uses the following external resources:
 To install the module from the PowerShell Gallery, you can use the following command:
 
 ```powershell
-Install-PSResource -Name {{ NAME }}
-Import-Module -Name {{ NAME }}
+Install-PSResource -Name InTools
+Import-Module -Name InTools
 ```
 
 ## Usage

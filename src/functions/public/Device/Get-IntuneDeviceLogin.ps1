@@ -23,12 +23,12 @@
 
     .EXAMPLE
     Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All","User.Read.All"
-    Get-IntuneDeviceLogin -DeviceId "c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a" -Verbose
+    Get-IntuneDeviceLogin -DeviceId "c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a"
 
     Gets logged-on user info for the specified device.
 
     .EXAMPLE
-    "PC-001","PC-002" | Get-IntuneDeviceLogin -DeviceName -Verbose
+    "PC-001","PC-002" | Get-IntuneDeviceLogin -DeviceName
 
     Resolves the two device names and returns logged-on user info for all matches.
 
