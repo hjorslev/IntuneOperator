@@ -1,6 +1,6 @@
-# {{ NAME }}
+# InTools
 
-{{ DESCRIPTION }}
+InTools is a PowerShell module for Intune.
 
 ## Prerequisites
 
