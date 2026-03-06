@@ -28,7 +28,7 @@
     Gets logged-on user info for the specified device.
 
     .EXAMPLE
-    Get-IntuneDeviceLogin -DeviceName "PC-001"
+    Get-IntuneDeviceLogin -DeviceName PC-001
 
     Resolves the device name and returns logged-on user info for the match.
 
