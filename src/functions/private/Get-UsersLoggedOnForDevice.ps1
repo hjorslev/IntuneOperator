@@ -26,6 +26,8 @@
     Uses Microsoft Graph /beta endpoint where usersLoggedOn is available.
     Requires DeviceManagementManagedDevices.Read.All scope.
     #>
+
+    [OutputType([PSObject])]
     [CmdletBinding()]
     param(
         [Parameter(

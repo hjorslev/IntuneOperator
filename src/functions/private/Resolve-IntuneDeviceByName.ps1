@@ -27,6 +27,7 @@
     Uses Microsoft Graph /beta endpoint.
     Requires DeviceManagementManagedDevices.Read.All scope.
     #>
+
     [OutputType([PSObject[]])]
     [CmdletBinding()]
     param(

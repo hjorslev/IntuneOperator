@@ -49,6 +49,7 @@
     - Emits no output if no users are logged on for a device.
     - Errors are terminating for request/HTTP failures; use try/catch around calls if desired.
     #>
+
     [OutputType([PSCustomObject])]
     [CmdletBinding(DefaultParameterSetName = 'ById', SupportsShouldProcess = $false)]
     param(

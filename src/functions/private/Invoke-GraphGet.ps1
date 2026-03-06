@@ -26,6 +26,8 @@
     Part of the Intune Device Login helper functions.
     Requires Microsoft.Graph PowerShell module with active connection.
     #>
+
+    [OutputType([PSObject])]
     [CmdletBinding()]
     param(
         [Parameter(
