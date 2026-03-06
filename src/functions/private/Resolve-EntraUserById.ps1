@@ -28,6 +28,8 @@
     Requires User.Read.All scope.
     Returns a minimal user object if user cannot be found.
     #>
+
+    [OutputType([PSObject])]
     [CmdletBinding()]
     param(
         [Parameter(
@@ -51,9 +53,9 @@
         } catch {
             Write-Verbose "Could not resolve user ID '$UserId': $($_.Exception.Message)"
             # Return a minimal object with the ID and a placeholder UPN
-            [pscustomobject]@{
-                id                   = $UserId
-                userPrincipalName    = "Unknown (ID: $UserId)"
+            [PSCustomObject]@{
+                id                = $UserId
+                userPrincipalName = "Unknown (ID: $UserId)"
             }
         }
     }
