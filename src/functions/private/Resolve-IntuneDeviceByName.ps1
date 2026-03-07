@@ -54,7 +54,7 @@
 
         if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
             Write-Verbose "No managed devices found with deviceName '$Name'."
-            return @()
+            return [System.Collections.Hashtable[]]@()
         }
 
         return $resp.value

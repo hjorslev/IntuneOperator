@@ -356,7 +356,7 @@ Describe 'Get-IntuneDeviceLogin' {
 
         It 'Should return nothing if device name is not found' {
             # Arrange
-            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $null }
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @() }
 
             # Act
             $result = Get-IntuneDeviceLogin -DeviceName 'NonExistent'
