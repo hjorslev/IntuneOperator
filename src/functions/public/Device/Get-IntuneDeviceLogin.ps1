@@ -36,7 +36,7 @@
     System.String (DeviceId via -DeviceId, or DeviceName via -DeviceName with ValueFromPipeline/PropertyName)
 
     .OUTPUTS
-    PSCustomObject with the following properties:
+    PSCustomObject with the following properties
     - DeviceId (string)
     - DeviceName (string)
     - UserId (string)
@@ -44,7 +44,7 @@
     - LastLogonDateTime (datetime)
 
     .NOTES
-    Author: fhn.it & ChatGPT
+    Author: FHN & ChatGPT
     - Uses /beta Graph endpoints because usersLoggedOn is exposed there.
     - Emits no output if no users are logged on for a device.
     - Errors are terminating for request/HTTP failures; use try/catch around calls if desired.
