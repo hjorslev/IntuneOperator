@@ -36,12 +36,12 @@
     System.String (DeviceId via -DeviceId, or DeviceName via -DeviceName with ValueFromPipeline/PropertyName)
 
     .OUTPUTS
-    PSCustomObject with:
-        - DeviceId (string)
-        - DeviceName (string)
-        - UserId (string)
-        - UserPrincipalName (string)
-        - LastLogonDateTime (datetime)
+    PSCustomObject with the following properties:
+    - DeviceId (string)
+    - DeviceName (string)
+    - UserId (string)
+    - UserPrincipalName (string)
+    - LastLogonDateTime (datetime)
 
     .NOTES
     Author: fhn.it & ChatGPT
