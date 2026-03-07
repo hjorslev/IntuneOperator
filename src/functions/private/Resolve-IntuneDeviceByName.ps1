@@ -28,7 +28,7 @@
     Requires DeviceManagementManagedDevices.Read.All scope.
     #>
 
-    [OutputType([PSObject[]])]
+    [OutputType([System.Collections.Hashtable[]])]
     [CmdletBinding()]
     param(
         [Parameter(

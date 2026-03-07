@@ -1,4 +1,4 @@
-﻿function Get-IntuneDeviceLogin{
+﻿function Get-IntuneDeviceLogin {
     <#
     .SYNOPSIS
     Retrieves logged-on user info for an Intune-managed device by DeviceId (GUID) or device name.
