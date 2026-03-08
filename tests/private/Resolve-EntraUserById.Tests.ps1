@@ -41,7 +41,7 @@ Describe 'Resolve-EntraUserById' {
             Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockUser }
 
             # Act
-            $result = Resolve-EntraUserById -UserId $testUserId
+            Resolve-EntraUserById -UserId $testUserId | Out-Null
 
             # Assert
             Assert-MockCalled -CommandName 'Invoke-GraphGet' -Times 1 -Exactly -Scope It
