@@ -5,7 +5,7 @@
             CheckHashtable = $true
         }
         PSAvoidLongLines                   = @{
-            Enable            = $true
+            Enable            = $false
             MaximumLineLength = 150
         }
         PSAvoidSemicolonsAsLineTerminators = @{

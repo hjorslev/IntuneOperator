@@ -1,6 +1,8 @@
-# InTools
+# IntuneOperator
 
-InTools is a PowerShell module for Intune.
+## IntuneOperator
+
+IntuneOperator is a PowerShell module for Intune that helps managing your Endpoint fleet.
 
 ## Prerequisites
 
