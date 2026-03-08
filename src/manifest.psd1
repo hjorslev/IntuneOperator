@@ -3,5 +3,6 @@
 @{
     Author            = 'Frederik Hjorslev Nylander'
     Copyright         = '(c) 2026 Frederik Hjorslev Nylander. All rights reserved.'
+    Description       = 'A PowerShell module for managing and enhancing Microsoft Intune.'
     PowerShellVersion = '7.4'
 }
