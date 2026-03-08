@@ -32,19 +32,19 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should return a PSCustomObject with logged-on user information' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @(
                     [PSCustomObject]@{
-                        userId           = $testUserId
+                        userId            = $testUserId
                         lastLogOnDateTime = $testLastLogonDateTime
                     }
                 )
             }
 
             $mockUser = [PSCustomObject]@{
-                id                   = $testUserId
-                userPrincipalName    = $testUserPrincipalName
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
             }
 
             Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
@@ -70,8 +70,8 @@ Describe 'Get-IntuneDeviceLogin' {
             $upn2 = 'user2@contoso.com'
 
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $userId1
@@ -92,8 +92,7 @@ Describe 'Get-IntuneDeviceLogin' {
                         id                = $userId1
                         userPrincipalName = $upn1
                     }
-                }
-                else {
+                } else {
                     return [PSCustomObject]@{
                         id                = $userId2
                         userPrincipalName = $upn2
@@ -113,8 +112,8 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should return nothing if no users are logged on' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @()
             }
 
@@ -142,8 +141,8 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should work with DeviceId alias "Id"' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
@@ -171,8 +170,8 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should work with DeviceId alias "ManagedDeviceId"' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
@@ -218,8 +217,8 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should resolve device by name and return logged-on users' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
@@ -255,20 +254,20 @@ Describe 'Get-IntuneDeviceLogin' {
 
             $mockDevices = @(
                 [PSCustomObject]@{
-                    id           = $deviceId1
-                    deviceName   = $testDeviceName
+                    id            = $deviceId1
+                    deviceName    = $testDeviceName
                     usersLoggedOn = @([PSCustomObject]@{
-                        userId            = $userId1
-                        lastLogOnDateTime = '2024-03-05T10:30:00Z'
-                    })
+                            userId            = $userId1
+                            lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                        })
                 },
                 [PSCustomObject]@{
-                    id           = $deviceId2
-                    deviceName   = $testDeviceName
+                    id            = $deviceId2
+                    deviceName    = $testDeviceName
                     usersLoggedOn = @([PSCustomObject]@{
-                        userId            = $userId2
-                        lastLogOnDateTime = '2024-03-05T11:00:00Z'
-                    })
+                            userId            = $userId2
+                            lastLogOnDateTime = '2024-03-05T11:00:00Z'
+                        })
                 }
             )
 
@@ -280,8 +279,7 @@ Describe 'Get-IntuneDeviceLogin' {
                         id                = $userId1
                         userPrincipalName = 'user1@contoso.com'
                     }
-                }
-                else {
+                } else {
                     return [PSCustomObject]@{
                         id                = $userId2
                         userPrincipalName = 'user2@contoso.com'
@@ -301,8 +299,8 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should work with DeviceName alias "Name"' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
@@ -329,8 +327,8 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should work with DeviceName alias "ComputerName"' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = $testDeviceName
+                id            = $testDeviceId
+                deviceName    = $testDeviceName
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
@@ -372,17 +370,17 @@ Describe 'Get-IntuneDeviceLogin' {
 
             $mockDevices = @(
                 [PSCustomObject]@{
-                    id           = $deviceId1
-                    deviceName   = 'DEVICE-001'
+                    id            = $deviceId1
+                    deviceName    = 'DEVICE-001'
                     usersLoggedOn = @()
                 },
                 [PSCustomObject]@{
-                    id           = $deviceId2
-                    deviceName   = 'DEVICE-001'
+                    id            = $deviceId2
+                    deviceName    = 'DEVICE-001'
                     usersLoggedOn = @([PSCustomObject]@{
-                        userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
-                        lastLogOnDateTime = '2024-03-05T11:00:00Z'
-                    })
+                            userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+                            lastLogOnDateTime = '2024-03-05T11:00:00Z'
+                        })
                 }
             )
 
@@ -419,12 +417,12 @@ Describe 'Get-IntuneDeviceLogin' {
             $testDeviceId = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
 
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = 'TEST-DEVICE'
+                id            = $testDeviceId
+                deviceName    = 'TEST-DEVICE'
                 usersLoggedOn = @([PSCustomObject]@{
-                    userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
-                    lastLogOnDateTime = '2024-03-05T10:30:00Z'
-                })
+                        userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+                        lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                    })
             }
 
             $mockUser = [PSCustomObject]@{
@@ -448,12 +446,12 @@ Describe 'Get-IntuneDeviceLogin' {
             $testDeviceName = 'TEST-DEVICE'
 
             $mockDevice = [PSCustomObject]@{
-                id           = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
-                deviceName   = $testDeviceName
+                id            = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+                deviceName    = $testDeviceName
                 usersLoggedOn = @([PSCustomObject]@{
-                    userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
-                    lastLogOnDateTime = '2024-03-05T10:30:00Z'
-                })
+                        userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+                        lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                    })
             }
 
             $mockUser = [PSCustomObject]@{
@@ -480,12 +478,12 @@ Describe 'Get-IntuneDeviceLogin' {
             }
 
             $mockDevice = [PSCustomObject]@{
-                id           = $testDeviceId
-                deviceName   = 'TEST-DEVICE'
+                id            = $testDeviceId
+                deviceName    = 'TEST-DEVICE'
                 usersLoggedOn = @([PSCustomObject]@{
-                    userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
-                    lastLogOnDateTime = '2024-03-05T10:30:00Z'
-                })
+                        userId            = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+                        lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                    })
             }
 
             $mockUser = [PSCustomObject]@{
