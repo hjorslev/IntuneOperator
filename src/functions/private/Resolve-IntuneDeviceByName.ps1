@@ -28,7 +28,7 @@
     Requires DeviceManagementManagedDevices.Read.All scope.
     #>
 
-    [OutputType([System.Collections.Hashtable[]])]
+    [OutputType([PSCustomObject[]])]
     [CmdletBinding()]
     param(
         [Parameter(
@@ -48,15 +48,21 @@
     process {
         # deviceName is case-insensitive in OData. Exact match.
         $encoded = [uri]::EscapeDataString("deviceName eq '$Name'")
-        $uri = "$baseUri`?`$filter=$encoded"
+        $uri = "$baseUri`?`$filter=$encoded&`$select=id,deviceName"
 
         $resp = Invoke-GraphGet -Uri $uri
 
         if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
-            Write-Verbose "No managed devices found with deviceName '$Name'."
-            return [System.Collections.Hashtable[]]@()
+            Write-Verbose -Message "No managed devices found with deviceName '$Name'."
+            return [PSCustomObject[]]@()
         }
 
-        return $resp.value
+        # Return PSCustomObject with Id and DeviceName
+        $resp.value | ForEach-Object -Process {
+            [PSCustomObject]@{
+                Id         = $_.id
+                DeviceName = $_.deviceName
+            }
+        }
     }
 }

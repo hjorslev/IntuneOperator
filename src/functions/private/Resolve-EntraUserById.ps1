@@ -51,7 +51,7 @@
         try {
             Invoke-GraphGet -Uri $uri
         } catch {
-            Write-Verbose "Could not resolve user ID '$UserId': $($_.Exception.Message)"
+            Write-Verbose -Message "Could not resolve user ID '$UserId': $($_.Exception.Message)"
             # Return a minimal object with the ID and a placeholder UPN
             [PSCustomObject]@{
                 id                = $UserId

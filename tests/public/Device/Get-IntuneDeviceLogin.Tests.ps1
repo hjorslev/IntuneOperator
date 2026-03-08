@@ -216,6 +216,11 @@ Describe 'Get-IntuneDeviceLogin' {
 
         It 'Should resolve device by name and return logged-on users' {
             # Arrange
+            $mockDeviceSummary = [PSCustomObject]@{
+                Id         = $testDeviceId
+                DeviceName = $testDeviceName
+            }
+
             $mockDevice = [PSCustomObject]@{
                 id            = $testDeviceId
                 deviceName    = $testDeviceName
@@ -232,7 +237,8 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = $testUserPrincipalName
             }
 
-            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDevice }
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
+            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -243,6 +249,7 @@ Describe 'Get-IntuneDeviceLogin' {
             $result.DeviceName | Should -Be $testDeviceName
             $result.UserPrincipalName | Should -Be $testUserPrincipalName
             Assert-MockCalled -CommandName 'Resolve-IntuneDeviceByName' -Times 1 -Exactly
+            Assert-MockCalled -CommandName 'Get-UsersLoggedOnForDevice' -Times 1 -Exactly
         }
 
         It 'Should handle multiple devices with the same name' {
@@ -251,6 +258,17 @@ Describe 'Get-IntuneDeviceLogin' {
             $deviceId2 = 'c2f6d2d8-2d2c-4d8d-9f0b-0d2b3d1e2f3b'
             $userId1 = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             $userId2 = 'u2e2a2d7-2d2b-4d8c-9f0a-0d2a3d1e2f3b'
+
+            $mockDeviceSummaries = @(
+                [PSCustomObject]@{
+                    Id         = $deviceId1
+                    DeviceName = $testDeviceName
+                },
+                [PSCustomObject]@{
+                    Id         = $deviceId2
+                    DeviceName = $testDeviceName
+                }
+            )
 
             $mockDevices = @(
                 [PSCustomObject]@{
@@ -271,7 +289,12 @@ Describe 'Get-IntuneDeviceLogin' {
                 }
             )
 
-            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDevices }
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDeviceSummaries }
+            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith {
+                param([string]$Id)
+                if ($Id -eq $deviceId1) { return $mockDevices[0] }
+                else { return $mockDevices[1] }
+            }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith {
                 param([string]$UserId)
                 if ($UserId -eq $userId1) {
@@ -298,6 +321,11 @@ Describe 'Get-IntuneDeviceLogin' {
 
         It 'Should work with DeviceName alias "Name"' {
             # Arrange
+            $mockDeviceSummary = [PSCustomObject]@{
+                Id         = $testDeviceId
+                DeviceName = $testDeviceName
+            }
+
             $mockDevice = [PSCustomObject]@{
                 id            = $testDeviceId
                 deviceName    = $testDeviceName
@@ -314,7 +342,8 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = $testUserPrincipalName
             }
 
-            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDevice }
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
+            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -326,6 +355,11 @@ Describe 'Get-IntuneDeviceLogin' {
 
         It 'Should work with DeviceName alias "ComputerName"' {
             # Arrange
+            $mockDeviceSummary = [PSCustomObject]@{
+                Id         = $testDeviceId
+                DeviceName = $testDeviceName
+            }
+
             $mockDevice = [PSCustomObject]@{
                 id            = $testDeviceId
                 deviceName    = $testDeviceName
@@ -342,7 +376,8 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = $testUserPrincipalName
             }
 
-            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDevice }
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
+            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -368,6 +403,17 @@ Describe 'Get-IntuneDeviceLogin' {
             $deviceId1 = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             $deviceId2 = 'c2f6d2d8-2d2c-4d8d-9f0b-0d2b3d1e2f3b'
 
+            $mockDeviceSummaries = @(
+                [PSCustomObject]@{
+                    Id         = $deviceId1
+                    DeviceName = 'DEVICE-001'
+                },
+                [PSCustomObject]@{
+                    Id         = $deviceId2
+                    DeviceName = 'DEVICE-001'
+                }
+            )
+
             $mockDevices = @(
                 [PSCustomObject]@{
                     id            = $deviceId1
@@ -384,7 +430,12 @@ Describe 'Get-IntuneDeviceLogin' {
                 }
             )
 
-            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDevices }
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDeviceSummaries }
+            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith {
+                param([string]$Id)
+                if ($Id -eq $deviceId1) { return $mockDevices[0] }
+                else { return $mockDevices[1] }
+            }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith {
                 return [PSCustomObject]@{
                     id                = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
@@ -415,6 +466,7 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should accept DeviceId from pipeline' {
             # Arrange
             $testDeviceId = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $pipelineObject = [PSCustomObject]@{ Id = $testDeviceId }
 
             $mockDevice = [PSCustomObject]@{
                 id            = $testDeviceId
@@ -434,7 +486,7 @@ Describe 'Get-IntuneDeviceLogin' {
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
-            $result = $testDeviceId | Get-IntuneDeviceLogin
+            $result = $pipelineObject | Get-IntuneDeviceLogin
 
             # Assert
             $result | Should -Not -BeNullOrEmpty
@@ -444,6 +496,11 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should accept DeviceName from pipeline' {
             # Arrange
             $testDeviceName = 'TEST-DEVICE'
+
+            $mockDeviceSummary = [PSCustomObject]@{
+                Id         = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+                DeviceName = $testDeviceName
+            }
 
             $mockDevice = [PSCustomObject]@{
                 id            = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
@@ -459,11 +516,12 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = 'user@contoso.com'
             }
 
-            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDevice }
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
+            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
-            $result = Get-IntuneDeviceLogin -DeviceName $testDeviceName
+            $result = $testDeviceName | Get-IntuneDeviceLogin
 
             # Assert
             $result | Should -Not -BeNullOrEmpty

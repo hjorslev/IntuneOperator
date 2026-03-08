@@ -41,7 +41,7 @@
     )
 
     process {
-        Write-Verbose "GET $Uri"
+        Write-Verbose -Message "GET $Uri"
         try {
             $splat = @{
                 Method      = 'GET'

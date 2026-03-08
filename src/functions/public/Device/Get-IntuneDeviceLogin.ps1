@@ -57,7 +57,6 @@
         [Parameter(
             ParameterSetName = 'ById',
             Mandatory = $true,
-            ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
         [ValidatePattern('^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$')]
@@ -79,16 +78,16 @@
     process {
         switch ($PSCmdlet.ParameterSetName) {
             'ById' {
-                Write-Verbose "Resolving usersLoggedOn for device id: $DeviceId"
+                Write-Verbose -Message "Resolving usersLoggedOn for device id: $DeviceId"
                 $device = Get-UsersLoggedOnForDevice -Id $DeviceId
 
                 if (-not $device) {
-                    Write-Verbose "Managed device not found for id '$DeviceId'."
+                    Write-Verbose -Message "Managed device not found for id '$DeviceId'."
                     return
                 }
 
                 if (-not $device.usersLoggedOn -or $device.usersLoggedOn.Count -eq 0) {
-                    Write-Verbose "No logged-on users found for device '$($device.deviceName)' ($DeviceId)."
+                    Write-Verbose -Message "No logged-on users found for device '$($device.deviceName)' ($DeviceId)."
                     return
                 }
 
@@ -105,24 +104,25 @@
             }
 
             'ByName' {
-                Write-Verbose "Resolving device(s) by name: $DeviceName"
-                $devices = Resolve-IntuneDeviceByName -Name $DeviceName
+                Write-Verbose -Message "Resolving device(s) by name: $DeviceName"
+                $deviceSummaries = Resolve-IntuneDeviceByName -Name $DeviceName
 
-                if ($devices.Count -gt 1) {
-                    Write-Verbose "Multiple devices matched name '$DeviceName' ($($devices.Count) matches). Returning results for all."
+                if ($deviceSummaries.Count -gt 1) {
+                    Write-Verbose -Message "Multiple devices matched name '$DeviceName' ($($deviceSummaries.Count) matches). Returning results for all."
                 }
 
-                foreach ($dev in $devices) {
-                    if (-not $dev.usersLoggedOn -or $dev.usersLoggedOn.Count -eq 0) {
-                        Write-Verbose "No logged-on users found for device '$($dev.deviceName)' ($($dev.id))."
+                foreach ($summary in $deviceSummaries) {
+                    $device = Get-UsersLoggedOnForDevice -Id $summary.Id
+                    if (-not $device.usersLoggedOn -or $device.usersLoggedOn.Count -eq 0) {
+                        Write-Verbose -Message "No logged-on users found for device '$($summary.DeviceName)' ($($summary.Id))."
                         continue
                     }
 
-                    foreach ($entry in $dev.usersLoggedOn) {
+                    foreach ($entry in $device.usersLoggedOn) {
                         $user = Resolve-EntraUserById -UserId $entry.userId
                         [PSCustomObject]@{
-                            DeviceId          = $dev.id
-                            DeviceName        = $dev.deviceName
+                            DeviceId          = $device.id
+                            DeviceName        = $device.deviceName
                             UserId            = $entry.userId
                             UserPrincipalName = $user.userPrincipalName
                             LastLogonDateTime = [datetime]$entry.lastLogOnDateTime
