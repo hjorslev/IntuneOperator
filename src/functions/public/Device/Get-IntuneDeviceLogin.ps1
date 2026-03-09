@@ -75,11 +75,16 @@
         [string]$DeviceName
     )
 
+    begin {
+        $baseUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
+    }
+
     process {
         switch ($PSCmdlet.ParameterSetName) {
             'ById' {
                 Write-Verbose -Message "Resolving usersLoggedOn for device id: $DeviceId"
-                $device = Get-UsersLoggedOnForDevice -Id $DeviceId
+                $uri = "$baseUri/$DeviceId"
+                $device = Invoke-GraphGet -Uri $uri
 
                 if (-not $device) {
                     Write-Verbose -Message "Managed device not found for id '$DeviceId'."
@@ -112,7 +117,8 @@
                 }
 
                 foreach ($summary in $deviceSummaries) {
-                    $device = Get-UsersLoggedOnForDevice -Id $summary.Id
+                    $uri = "$baseUri/$($summary.Id)"
+                    $device = Invoke-GraphGet -Uri $uri
                     if (-not $device.usersLoggedOn -or $device.usersLoggedOn.Count -eq 0) {
                         Write-Verbose -Message "No logged-on users found for device '$($summary.DeviceName)' ($($summary.Id))."
                         continue
@@ -131,5 +137,5 @@
                 }
             }
         }
-    }
-}
+    } # Process
+} # Cmdlet

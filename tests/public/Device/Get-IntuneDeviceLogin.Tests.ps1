@@ -5,7 +5,6 @@ BeforeAll {
     $PrivateFunctionsPath = Join-Path -Path $ModuleRoot -ChildPath 'src\functions\private'
 
     # Dot-source the private functions that Get-IntuneDeviceLogin depends on
-    . (Join-Path -Path $PrivateFunctionsPath -ChildPath 'Get-UsersLoggedOnForDevice.ps1')
     . (Join-Path -Path $PrivateFunctionsPath -ChildPath 'Resolve-EntraUserById.ps1')
     . (Join-Path -Path $PrivateFunctionsPath -ChildPath 'Resolve-IntuneDeviceByName.ps1')
     . (Join-Path -Path $PrivateFunctionsPath -ChildPath 'Invoke-GraphGet.ps1')
@@ -47,7 +46,7 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = $testUserPrincipalName
             }
 
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -84,7 +83,7 @@ Describe 'Get-IntuneDeviceLogin' {
                 )
             }
 
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith {
                 param([string]$UserId)
                 if ($UserId -eq $userId1) {
@@ -117,19 +116,19 @@ Describe 'Get-IntuneDeviceLogin' {
                 usersLoggedOn = @()
             }
 
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
 
             # Act
             $result = Get-IntuneDeviceLogin -DeviceId $testDeviceId
 
             # Assert
             $result | Should -BeNullOrEmpty
-            Assert-MockCalled -CommandName 'Get-UsersLoggedOnForDevice' -Times 1
+            Assert-MockCalled -CommandName 'Invoke-GraphGet' -Times 1
         }
 
         It 'Should return nothing if device is not found' {
             # Arrange
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $null }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $null }
 
             # Act
             $result = Get-IntuneDeviceLogin -DeviceId $testDeviceId
@@ -156,7 +155,7 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = $testUserPrincipalName
             }
 
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -185,7 +184,7 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = $testUserPrincipalName
             }
 
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -238,7 +237,7 @@ Describe 'Get-IntuneDeviceLogin' {
             }
 
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -249,7 +248,7 @@ Describe 'Get-IntuneDeviceLogin' {
             $result.DeviceName | Should -Be $testDeviceName
             $result.UserPrincipalName | Should -Be $testUserPrincipalName
             Assert-MockCalled -CommandName 'Resolve-IntuneDeviceByName' -Times 1 -Exactly
-            Assert-MockCalled -CommandName 'Get-UsersLoggedOnForDevice' -Times 1 -Exactly
+            Assert-MockCalled -CommandName 'Invoke-GraphGet' -Times 1 -Exactly
         }
 
         It 'Should handle multiple devices with the same name' {
@@ -290,9 +289,9 @@ Describe 'Get-IntuneDeviceLogin' {
             )
 
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDeviceSummaries }
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith {
-                param([string]$Id)
-                if ($Id -eq $deviceId1) { return $mockDevices[0] }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match $deviceId1) { return $mockDevices[0] }
                 else { return $mockDevices[1] }
             }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith {
@@ -343,7 +342,7 @@ Describe 'Get-IntuneDeviceLogin' {
             }
 
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -377,7 +376,7 @@ Describe 'Get-IntuneDeviceLogin' {
             }
 
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -431,9 +430,9 @@ Describe 'Get-IntuneDeviceLogin' {
             )
 
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return $mockDeviceSummaries }
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith {
-                param([string]$Id)
-                if ($Id -eq $deviceId1) { return $mockDevices[0] }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match $deviceId1) { return $mockDevices[0] }
                 else { return $mockDevices[1] }
             }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith {
@@ -482,7 +481,7 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = 'user@contoso.com'
             }
 
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -490,7 +489,7 @@ Describe 'Get-IntuneDeviceLogin' {
 
             # Assert
             $result | Should -Not -BeNullOrEmpty
-            Assert-MockCalled -CommandName 'Get-UsersLoggedOnForDevice' -Times 1
+            Assert-MockCalled -CommandName 'Invoke-GraphGet' -Times 1
         }
 
         It 'Should accept DeviceName from pipeline' {
@@ -517,7 +516,7 @@ Describe 'Get-IntuneDeviceLogin' {
             }
 
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @($mockDeviceSummary) }
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
@@ -549,7 +548,7 @@ Describe 'Get-IntuneDeviceLogin' {
                 userPrincipalName = 'user@contoso.com'
             }
 
-            Mock -CommandName 'Get-UsersLoggedOnForDevice' -MockWith { return $mockDevice }
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevice }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
             # Act
