@@ -17,15 +17,15 @@ Import-Module -Name IntuneOperator
 
 Here is a list of example that are typical use cases for the module.
 
-### Example 1: Greet an entity
+### Example 1: Get-IntuneDeviceLogin
 
-As for March 2026 there is one cmdlet: `Get-IntuneDeviceLogin`
+As for March 2026 there is one cmdlet: `Get-IntuneDeviceLogin`.
 
 ```powershell
 Get-IntuneDeviceLogin -DeviceName PC-001
 ```
 
-```
+```text
 DeviceName        : PC-001
 UserPrincipalName : john.doe@contoso.com
 DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
@@ -43,7 +43,7 @@ LastLogonDateTime : 3/7/2026 2:45:00 PM
 Get-IntuneDeviceLogin -UserPrincipalName john.doe@contoso.com
 ```
 
-```
+```text
 DeviceName        : PC-001
 UserPrincipalName : john.doe@contoso.com
 DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
@@ -59,4 +59,4 @@ LastLogonDateTime : 3/5/2026 9:33:00 AM
 
 ## Acknowledgements
 
-  - [Process-Module](https://github.com/PSModule/Process-PSModule) by [Marius Storhaug](https://github.com/MariusStorhaug). Contains the entire build pipeline. This is greatly beneficial and helps me just concentrating on building the cmdlets.
+- [Process-Module](https://github.com/PSModule/Process-PSModule) by [Marius Storhaug](https://github.com/MariusStorhaug). Contains the entire build pipeline. This is greatly beneficial and helps me just concentrating on building the cmdlets.
