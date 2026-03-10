@@ -559,4 +559,706 @@ Describe 'Get-IntuneDeviceLogin' {
         }
     }
 
+    Context 'When called with ByUserPrincipalName parameter set' {
+        BeforeEach {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testUserPrincipalName = 'john.doe@contoso.com'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testDeviceId1 = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testDeviceId2 = 'c2f6d2d8-2d2c-4d8d-9f0b-0d2b3d1e2f3b'
+        }
+
+        It 'Should find devices where the user has logged in' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = $testDeviceId2
+                        deviceName    = 'DEVICE-002'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u2e2a2d7-2d2b-4d8c-9f0a-0d2a3d1e2f3b'
+                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    return $mockDevicesResponse
+                }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 1
+            $results[0].DeviceId | Should -Be $testDeviceId1
+            $results[0].DeviceName | Should -Be 'DEVICE-001'
+            $results[0].UserId | Should -Be $testUserId
+            $results[0].UserPrincipalName | Should -Be $testUserPrincipalName
+        }
+
+        It 'Should find multiple devices where the user has logged in' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = $testDeviceId2
+                        deviceName    = 'DEVICE-002'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    return $mockDevicesResponse
+                }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 2
+            $results[0].DeviceId | Should -Be $testDeviceId1
+            $results[1].DeviceId | Should -Be $testDeviceId2
+        }
+
+        It 'Should return nothing if user has not logged into any devices' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u2e2a2d7-2d2b-4d8c-9f0a-0d2a3d1e2f3b'
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    return $mockDevicesResponse
+                }
+            }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 0
+        }
+
+        It 'Should handle non-existent UserPrincipalName gracefully' {
+            # Arrange
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                throw "User not found"
+            }
+
+            # Act & Assert
+            { Get-IntuneDeviceLogin -UserPrincipalName 'nonexistent@contoso.com' -ErrorAction Stop } | Should -Throw
+        }
+
+        It 'Should work with UserPrincipalName alias "UPN"' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    return $mockDevicesResponse
+                }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UPN $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 1
+            $results[0].UserPrincipalName | Should -Be $testUserPrincipalName
+        }
+
+        It 'Should skip devices with no logged-on users' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @()
+                    },
+                    [PSCustomObject]@{
+                        id            = $testDeviceId2
+                        deviceName    = 'DEVICE-002'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    return $mockDevicesResponse
+                }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 1
+            $results[0].DeviceId | Should -Be $testDeviceId2
+        }
+
+        It 'Should find device in second page during pagination' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            # Simulate paginated response: first page has different user, second page has target user
+            $page1 = [PSCustomObject]@{
+                value           = @(
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000001'
+                        deviceName    = 'OTHER-DEVICE-1'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u0000000-0000-0000-0000-000000000099'
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+                '@odata.nextLink' = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices?$select=id,deviceName,usersLoggedOn&$skiptoken=xyz'
+            }
+
+            $page2 = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            $callCount = 0
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                $callCount++
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    # Simulate pagination by returning page1 first, then page2
+                    if ($Uri -match 'skiptoken') {
+                        return $page2
+                    } else {
+                        return $page1
+                    }
+                }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 1
+            $results[0].DeviceId | Should -Be $testDeviceId1
+            $results[0].DeviceName | Should -Be 'DEVICE-001'
+        }
+
+        It 'Should find multiple devices across multiple pages' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            # Simulate multiple pages with target user on both pages
+            $page1 = [PSCustomObject]@{
+                value           = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+                '@odata.nextLink' = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices?$select=id,deviceName,usersLoggedOn&$skiptoken=abc'
+            }
+
+            $page2 = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId2
+                        deviceName    = 'DEVICE-002'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    if ($Uri -match 'skiptoken') {
+                        return $page2
+                    } else {
+                        return $page1
+                    }
+                }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 2
+            $results[0].DeviceId | Should -Be $testDeviceId1
+            $results[1].DeviceId | Should -Be $testDeviceId2
+        }
+
+        It 'Should handle pagination with no matches on first page but match on second' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            # First page: no target user
+            $page1 = [PSCustomObject]@{
+                value           = @(
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000001'
+                        deviceName    = 'OTHER-DEVICE'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u0000000-0000-0000-0000-000000000099'
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000002'
+                        deviceName    = 'OTHER-DEVICE-2'
+                        usersLoggedOn = @()
+                    }
+                )
+                '@odata.nextLink' = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices?$select=id,deviceName,usersLoggedOn&$skiptoken=def'
+            }
+
+            # Second page: match found
+            $page2 = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-ON-PAGE2'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-03T14:22:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                } else {
+                    if ($Uri -match 'skiptoken') {
+                        return $page2
+                    } else {
+                        return $page1
+                    }
+                }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 1
+            $results[0].DeviceId | Should -Be $testDeviceId1
+            $results[0].DeviceName | Should -Be 'DEVICE-ON-PAGE2'
+        }
+    }
+
+    Context 'When called with ByUserId parameter set' {
+        BeforeEach {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testUserPrincipalName = 'john.doe@contoso.com'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testDeviceId1 = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+        }
+
+        It 'Should find devices where the user (by ID) has logged in' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevicesResponse }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserId $testUserId)
+
+            # Assert
+            $results.Count | Should -Be 1
+            $results[0].DeviceId | Should -Be $testDeviceId1
+            $results[0].UserId | Should -Be $testUserId
+            $results[0].UserPrincipalName | Should -Be $testUserPrincipalName
+        }
+
+        It 'Should reject invalid GUID format for UserId' {
+            # Act & Assert
+            { Get-IntuneDeviceLogin -UserId 'not-a-guid' } | Should -Throw
+        }
+
+        It 'Should accept UserId from pipeline by property name' {
+            # Arrange
+            $pipelineObject = [PSCustomObject]@{
+                UserId = $testUserId
+            }
+
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $mockDevicesResponse }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @($pipelineObject | Get-IntuneDeviceLogin)
+
+            # Assert
+            $results.Count | Should -Be 1
+            $results[0].UserId | Should -Be $testUserId
+        }
+    }
+
+    Context 'Pagination handling for user searches' {
+        BeforeEach {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testUserPrincipalName = 'john.doe@contoso.com'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testDeviceId1 = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testDeviceId2 = 'c2f6d2d8-2d2c-4d8d-9f0b-0d2b3d1e2f3b'
+        }
+
+        It 'Should handle paginated response for UserId search' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            # Simulate paginated response: Invoke-GraphGet should aggregate results
+            $paginatedResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u0000000-0000-0000-0000-000000000001'
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = $testDeviceId2
+                        deviceName    = 'DEVICE-002'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $paginatedResponse }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserId $testUserId)
+
+            # Assert
+            # Invoke-GraphGet handles pagination and aggregates results
+            $results.Count | Should -Be 1
+            $results[0].DeviceId | Should -Be $testDeviceId2
+            $results[0].UserId | Should -Be $testUserId
+        }
+
+        It 'Should find user on device in aggregated paginated results' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            # Simulate result from Invoke-GraphGet that already aggregated multiple pages
+            $aggregatedResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000001'
+                        deviceName    = 'PAGE1-DEVICE'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u0000000-0000-0000-0000-000000000099'
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000002'
+                        deviceName    = 'PAGE2-DEVICE'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-03T14:22:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000003'
+                        deviceName    = 'PAGE3-DEVICE'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u0000000-0000-0000-0000-000000000088'
+                                lastLogOnDateTime = '2024-03-02T08:45:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $aggregatedResponse }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserId $testUserId)
+
+            # Assert
+            # Should find the user even though they're in the middle of aggregated results
+            $results.Count | Should -Be 1
+            $results[0].DeviceId | Should -Be 'c0000000-0000-0000-0000-000000000002'
+            $results[0].DeviceName | Should -Be 'PAGE2-DEVICE'
+        }
+
+        It 'Should find multiple matches across aggregated pages' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            # Simulate aggregated result with target user on multiple devices
+            $aggregatedResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000001'
+                        deviceName    = 'PAGE1-DEVICE'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000002'
+                        deviceName    = 'PAGE2-DEVICE'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = 'u0000000-0000-0000-0000-000000000099'
+                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = 'c0000000-0000-0000-0000-000000000003'
+                        deviceName    = 'PAGE3-DEVICE'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-02T08:45:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith { return $aggregatedResponse }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserId $testUserId)
+
+            # Assert
+            $results.Count | Should -Be 2
+            $results[0].DeviceName | Should -Be 'PAGE1-DEVICE'
+            $results[1].DeviceName | Should -Be 'PAGE3-DEVICE'
+        }
+    }
 }
