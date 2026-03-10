@@ -96,7 +96,6 @@
         [Parameter(
             ParameterSetName = 'ByUserPrincipalName',
             Mandatory = $true,
-            ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
         [ValidateNotNullOrEmpty()]
@@ -107,7 +106,6 @@
         [Parameter(
             ParameterSetName = 'ByUserId',
             Mandatory = $true,
-            ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
         [ValidatePattern('^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$')]
@@ -322,17 +320,28 @@
                 # Note: Graph API may not support filtering on usersLoggedOn collection, so we retrieve all and filter client-side
                 # Invoke-GraphGet automatically handles pagination
                 $uri = "$baseUri`?`$select=id,deviceName,usersLoggedOn"
-                $resp = Invoke-GraphGet -Uri $uri
+                $allDevices = [System.Collections.Generic.List[object]]::new()
+                $nextUri = $uri
 
-                if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
+                while ($null -ne $nextUri) {
+                    $resp = Invoke-GraphGet -Uri $nextUri
+
+                    if ($null -ne $resp.value) {
+                        $allDevices.AddRange($resp.value)
+                    }
+
+                    $nextUri = $resp.'@odata.nextLink'
+                }
+
+                if ($allDevices.Count -eq 0) {
                     Write-Verbose -Message "No managed devices found."
                     return
                 }
 
-                Write-Verbose -Message "Checking $($resp.value.Count) managed devices for user logons"
+                Write-Verbose -Message "Checking $($allDevices.Count) managed devices for user logons"
 
                 $matchCount = 0
-                foreach ($device in $resp.value) {
+                foreach ($device in $allDevices) {
                     # Check if target user is in the usersLoggedOn collection
                     $userLogon = $device.usersLoggedOn | Where-Object -FilterScript { $_.userId -eq $targetUserId }
                     if ($userLogon) {

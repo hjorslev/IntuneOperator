@@ -393,10 +393,12 @@ Describe 'Get-IntuneDeviceLogin' {
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @() }
 
             # Act
-            $result = Get-IntuneDeviceLogin -DeviceName 'NonExistent'
+            $result = Get-IntuneDeviceLogin -DeviceName 'NonExistent' -ErrorAction SilentlyContinue -ErrorVariable deviceNameNotFoundError
 
             # Assert
             $result | Should -BeNullOrEmpty
+            $deviceNameNotFoundError | Should -Not -BeNullOrEmpty
+            $deviceNameNotFoundError[0].FullyQualifiedErrorId | Should -Match 'DeviceNameNotFound'
         }
 
         It 'Should skip devices with no logged-on users' {
@@ -1009,7 +1011,7 @@ Describe 'Get-IntuneDeviceLogin' {
     Context 'When called with ByUserId parameter set' {
         BeforeEach {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
-            $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $testUserId = 'a1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserPrincipalName = 'john.doe@contoso.com'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
@@ -1097,7 +1099,7 @@ Describe 'Get-IntuneDeviceLogin' {
     Context 'Pagination handling for user searches' {
         BeforeEach {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
-            $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $testUserId = 'a1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserPrincipalName = 'john.doe@contoso.com'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
