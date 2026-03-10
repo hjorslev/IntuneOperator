@@ -131,10 +131,12 @@ Describe 'Get-IntuneDeviceLogin' {
             Mock -CommandName 'Invoke-GraphGet' -MockWith { return $null }
 
             # Act
-            $result = Get-IntuneDeviceLogin -DeviceId $testDeviceId
+            $result = Get-IntuneDeviceLogin -DeviceId $testDeviceId -ErrorAction SilentlyContinue -ErrorVariable deviceNotFoundError
 
             # Assert
             $result | Should -BeNullOrEmpty
+            $deviceNotFoundError | Should -Not -BeNullOrEmpty
+            $deviceNotFoundError[0].FullyQualifiedErrorId | Should -Match 'DeviceNotFound'
         }
 
         It 'Should work with DeviceId alias "Id"' {
