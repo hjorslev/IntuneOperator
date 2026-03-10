@@ -43,9 +43,9 @@
     Resolves the device name and returns logged-on user info for the match.
 
     .EXAMPLE
-    Get-IntuneDeviceLogin -UserPrincipalName "john.doe@contoso.com"
+    Get-IntuneDeviceLogin -UserPrincipalName "<UserPrincipalName>"
 
-    Returns all devices where john.doe@contoso.com has logged in.
+    Returns all devices where the specified user principal name has logged in.
 
     .EXAMPLE
     Get-IntuneDeviceLogin -UserId "c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a"
