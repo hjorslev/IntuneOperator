@@ -817,7 +817,7 @@ Describe 'Get-IntuneDeviceLogin' {
 
             # Simulate paginated response: first page has different user, second page has target user
             $page1 = [PSCustomObject]@{
-                value           = @(
+                value             = @(
                     [PSCustomObject]@{
                         id            = 'c0000000-0000-0000-0000-000000000001'
                         deviceName    = 'OTHER-DEVICE-1'
@@ -882,7 +882,7 @@ Describe 'Get-IntuneDeviceLogin' {
 
             # Simulate multiple pages with target user on both pages
             $page1 = [PSCustomObject]@{
-                value           = @(
+                value             = @(
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-001'
@@ -944,7 +944,7 @@ Describe 'Get-IntuneDeviceLogin' {
 
             # First page: no target user
             $page1 = [PSCustomObject]@{
-                value           = @(
+                value             = @(
                     [PSCustomObject]@{
                         id            = 'c0000000-0000-0000-0000-000000000001'
                         deviceName    = 'OTHER-DEVICE'

@@ -64,7 +64,7 @@ Describe 'Invoke-GraphGet' {
         It 'Should follow pagination links and aggregate all results' {
             # Arrange
             $testUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
-            
+
             $page1 = [PSCustomObject]@{
                 value             = @(
                     [PSCustomObject]@{ id = 'device1'; deviceName = 'DEVICE-001' },
@@ -91,11 +91,9 @@ Describe 'Invoke-GraphGet' {
                 param($Uri)
                 if ($Uri -match 'skiptoken=page2') {
                     return $page2
-                }
-                elseif ($Uri -match 'skiptoken=page3') {
+                } elseif ($Uri -match 'skiptoken=page3') {
                     return $page3
-                }
-                else {
+                } else {
                     return $page1
                 }
             }
@@ -109,10 +107,10 @@ Describe 'Invoke-GraphGet' {
             $result.value[0].id | Should -Be 'device1'
             $result.value[2].id | Should -Be 'device3'
             $result.value[4].id | Should -Be 'device5'
-            
+
             # Verify nextLink was removed
             $result.'@odata.nextLink' | Should -BeNullOrEmpty
-            
+
             # Verify all pages were requested
             Assert-MockCalled -CommandName 'Invoke-MgGraphRequest' -Times 3 -Exactly
         }
@@ -120,7 +118,7 @@ Describe 'Invoke-GraphGet' {
         It 'Should handle pagination with only two pages' {
             # Arrange
             $testUri = 'https://graph.microsoft.com/beta/users'
-            
+
             $page1 = [PSCustomObject]@{
                 value             = @(
                     [PSCustomObject]@{ id = 'user1'; userPrincipalName = 'user1@contoso.com' }
@@ -138,8 +136,7 @@ Describe 'Invoke-GraphGet' {
                 param($Uri)
                 if ($Uri -match 'skiptoken=page2') {
                     return $page2
-                }
-                else {
+                } else {
                     return $page1
                 }
             }
@@ -158,7 +155,7 @@ Describe 'Invoke-GraphGet' {
         It 'Should handle empty pages in pagination' {
             # Arrange
             $testUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
-            
+
             $page1 = [PSCustomObject]@{
                 value             = @(
                     [PSCustomObject]@{ id = 'device1'; deviceName = 'DEVICE-001' }
@@ -181,11 +178,9 @@ Describe 'Invoke-GraphGet' {
                 param($Uri)
                 if ($Uri -match 'skiptoken=page2') {
                     return $page2
-                }
-                elseif ($Uri -match 'skiptoken=page3') {
+                } elseif ($Uri -match 'skiptoken=page3') {
                     return $page3
-                }
-                else {
+                } else {
                     return $page1
                 }
             }
@@ -203,7 +198,7 @@ Describe 'Invoke-GraphGet' {
         It 'Should write verbose messages during pagination' {
             # Arrange
             $testUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
-            
+
             $page1 = [PSCustomObject]@{
                 value             = @([PSCustomObject]@{ id = 'device1' })
                 '@odata.nextLink' = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices?$skiptoken=page2'
@@ -294,7 +289,7 @@ Describe 'Invoke-GraphGet' {
         It 'Should handle multiple pages with many items' {
             # Arrange
             $testUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
-            
+
             $page1 = [PSCustomObject]@{
                 value             = @(
                     [PSCustomObject]@{ id = 'device1'; deviceName = 'DEVICE-001' },
@@ -330,14 +325,11 @@ Describe 'Invoke-GraphGet' {
                 param($Uri)
                 if ($Uri -match 'skiptoken=page4') {
                     return $page4
-                }
-                elseif ($Uri -match 'skiptoken=page3') {
+                } elseif ($Uri -match 'skiptoken=page3') {
                     return $page3
-                }
-                elseif ($Uri -match 'skiptoken=page2') {
+                } elseif ($Uri -match 'skiptoken=page2') {
                     return $page2
-                }
-                else {
+                } else {
                     return $page1
                 }
             }
