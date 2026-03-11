@@ -316,21 +316,18 @@
 
                 Write-Verbose -Message "Searching for devices where user '$targetUserId' has logged in"
 
-                # Get all managed devices with usersLoggedOn property
-                # Note: Graph API may not support filtering on usersLoggedOn collection, so we retrieve all and filter client-side
-                # Invoke-GraphGet automatically handles pagination
+                # Get all managed devices with usersLoggedOn property.
+                # Invoke-GraphGet already handles pagination, so we query once and filter client-side.
                 $uri = "$baseUri`?`$select=id,deviceName,usersLoggedOn"
-                $allDevices = [System.Collections.Generic.List[object]]::new()
-                $nextUri = $uri
+                $resp = Invoke-GraphGet -Uri $uri
 
-                while ($null -ne $nextUri) {
-                    $resp = Invoke-GraphGet -Uri $nextUri
-
+                $allDevices = @()
+                if ($null -ne $resp) {
                     if ($null -ne $resp.value) {
-                        $allDevices.AddRange($resp.value)
+                        $allDevices = @($resp.value)
+                    } else {
+                        $allDevices = @($resp)
                     }
-
-                    $nextUri = $resp.'@odata.nextLink'
                 }
 
                 if ($allDevices.Count -eq 0) {
@@ -341,10 +338,20 @@
                 Write-Verbose -Message "Checking $($allDevices.Count) managed devices for user logons"
 
                 $matchCount = 0
+                $seenResults = [System.Collections.Generic.HashSet[string]]::new()
                 foreach ($device in $allDevices) {
                     # Check if target user is in the usersLoggedOn collection
                     $userLogon = $device.usersLoggedOn | Where-Object -FilterScript { $_.userId -eq $targetUserId }
                     if ($userLogon) {
+                        $latestUserLogon = $userLogon |
+                            Sort-Object -Property lastLogOnDateTime -Descending |
+                            Select-Object -First 1
+                        $logonTimestamp = [datetime]$latestUserLogon.lastLogOnDateTime
+                        $resultKey = "{0}|{1}|{2}" -f $device.id, $targetUserId, $logonTimestamp.ToString('o')
+                        if (-not $seenResults.Add($resultKey)) {
+                            continue
+                        }
+
                         $matchCount++
                         $user = Resolve-EntraUserById -UserId $targetUserId
                         [PSCustomObject]@{
@@ -352,7 +359,7 @@
                             UserPrincipalName = $user.userPrincipalName
                             DeviceId          = $device.id
                             UserId            = $targetUserId
-                            LastLogonDateTime = [datetime]$userLogon.lastLogOnDateTime
+                            LastLogonDateTime = $logonTimestamp
                         }
                     }
                 }

@@ -812,16 +812,16 @@ Describe 'Get-IntuneDeviceLogin' {
             $results[0].DeviceId | Should -Be $testDeviceId2
         }
 
-        It 'Should find device in second page during pagination' {
+        It 'Should find device when match appears later in aggregated paginated data' {
             # Arrange
             $mockUser = [PSCustomObject]@{
                 id                = $testUserId
                 userPrincipalName = $testUserPrincipalName
             }
 
-            # Simulate paginated response: first page has different user, second page has target user
-            $page1 = [PSCustomObject]@{
-                value             = @(
+            # Simulate aggregated output from Invoke-GraphGet after auto-pagination
+            $mockDevicesResponse = [PSCustomObject]@{
+                value = @(
                     [PSCustomObject]@{
                         id            = 'c0000000-0000-0000-0000-000000000001'
                         deviceName    = 'OTHER-DEVICE-1'
@@ -831,13 +831,7 @@ Describe 'Get-IntuneDeviceLogin' {
                                 lastLogOnDateTime = '2024-03-05T10:30:00Z'
                             }
                         )
-                    }
-                )
-                '@odata.nextLink' = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices?$select=id,deviceName,usersLoggedOn&$skiptoken=xyz'
-            }
-
-            $page2 = [PSCustomObject]@{
-                value = @(
+                    },
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-001'
@@ -851,19 +845,12 @@ Describe 'Get-IntuneDeviceLogin' {
                 )
             }
 
-            $callCount = 0
             Mock -CommandName 'Invoke-GraphGet' -MockWith {
                 param([string]$Uri)
-                $callCount++
                 if ($Uri -match 'users/') {
                     return $mockUser
                 } else {
-                    # Simulate pagination by returning page1 first, then page2
-                    if ($Uri -match 'skiptoken') {
-                        return $page2
-                    } else {
-                        return $page1
-                    }
+                    return $mockDevicesResponse
                 }
             }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
@@ -877,16 +864,16 @@ Describe 'Get-IntuneDeviceLogin' {
             $results[0].DeviceName | Should -Be 'DEVICE-001'
         }
 
-        It 'Should find multiple devices across multiple pages' {
+        It 'Should find multiple devices across paginated results' {
             # Arrange
             $mockUser = [PSCustomObject]@{
                 id                = $testUserId
                 userPrincipalName = $testUserPrincipalName
             }
 
-            # Simulate multiple pages with target user on both pages
-            $page1 = [PSCustomObject]@{
-                value             = @(
+            # Simulate aggregated output from Invoke-GraphGet after auto-pagination
+            $aggregatedResponse = [PSCustomObject]@{
+                value = @(
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-001'
@@ -896,13 +883,7 @@ Describe 'Get-IntuneDeviceLogin' {
                                 lastLogOnDateTime = '2024-03-05T10:30:00Z'
                             }
                         )
-                    }
-                )
-                '@odata.nextLink' = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices?$select=id,deviceName,usersLoggedOn&$skiptoken=abc'
-            }
-
-            $page2 = [PSCustomObject]@{
-                value = @(
+                    },
                     [PSCustomObject]@{
                         id            = $testDeviceId2
                         deviceName    = 'DEVICE-002'
@@ -921,11 +902,7 @@ Describe 'Get-IntuneDeviceLogin' {
                 if ($Uri -match 'users/') {
                     return $mockUser
                 } else {
-                    if ($Uri -match 'skiptoken') {
-                        return $page2
-                    } else {
-                        return $page1
-                    }
+                    return $aggregatedResponse
                 }
             }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
@@ -939,16 +916,16 @@ Describe 'Get-IntuneDeviceLogin' {
             $results[1].DeviceId | Should -Be $testDeviceId2
         }
 
-        It 'Should handle pagination with no matches on first page but match on second' {
+        It 'Should handle paginated results where match appears later in the dataset' {
             # Arrange
             $mockUser = [PSCustomObject]@{
                 id                = $testUserId
                 userPrincipalName = $testUserPrincipalName
             }
 
-            # First page: no target user
-            $page1 = [PSCustomObject]@{
-                value             = @(
+            # Simulate aggregated output from Invoke-GraphGet after auto-pagination
+            $aggregatedResponse = [PSCustomObject]@{
+                value = @(
                     [PSCustomObject]@{
                         id            = 'c0000000-0000-0000-0000-000000000001'
                         deviceName    = 'OTHER-DEVICE'
@@ -963,14 +940,7 @@ Describe 'Get-IntuneDeviceLogin' {
                         id            = 'c0000000-0000-0000-0000-000000000002'
                         deviceName    = 'OTHER-DEVICE-2'
                         usersLoggedOn = @()
-                    }
-                )
-                '@odata.nextLink' = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices?$select=id,deviceName,usersLoggedOn&$skiptoken=def'
-            }
-
-            # Second page: match found
-            $page2 = [PSCustomObject]@{
-                value = @(
+                    },
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-ON-PAGE2'
@@ -988,13 +958,9 @@ Describe 'Get-IntuneDeviceLogin' {
                 param([string]$Uri)
                 if ($Uri -match 'users/') {
                     return $mockUser
-                } else {
-                    if ($Uri -match 'skiptoken') {
-                        return $page2
-                    } else {
-                        return $page1
-                    }
                 }
+
+                return $aggregatedResponse
             }
             Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
 
@@ -1005,6 +971,76 @@ Describe 'Get-IntuneDeviceLogin' {
             $results.Count | Should -Be 1
             $results[0].DeviceId | Should -Be $testDeviceId1
             $results[0].DeviceName | Should -Be 'DEVICE-ON-PAGE2'
+        }
+
+        It 'Should suppress duplicate rows when Graph returns duplicate device entries' {
+            # Arrange
+            $mockUser = [PSCustomObject]@{
+                id                = $testUserId
+                userPrincipalName = $testUserPrincipalName
+            }
+
+            $duplicateResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = $testDeviceId2
+                        deviceName    = 'DEVICE-002'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = $testDeviceId1
+                        deviceName    = 'DEVICE-001'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                            }
+                        )
+                    },
+                    [PSCustomObject]@{
+                        id            = $testDeviceId2
+                        deviceName    = 'DEVICE-002'
+                        usersLoggedOn = @(
+                            [PSCustomObject]@{
+                                userId            = $testUserId
+                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                            }
+                        )
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'users/') {
+                    return $mockUser
+                }
+
+                return $duplicateResponse
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith { return $mockUser }
+
+            # Act
+            $results = @(Get-IntuneDeviceLogin -UserPrincipalName $testUserPrincipalName)
+
+            # Assert
+            $results.Count | Should -Be 2
+            ($results | Select-Object -ExpandProperty DeviceId | Sort-Object) | Should -Be @($testDeviceId1, $testDeviceId2)
         }
     }
 
