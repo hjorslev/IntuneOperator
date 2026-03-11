@@ -1,3 +1,1 @@
-﻿Write-Verbose '-------------------------------'
-Write-Verbose '---  THIS IS AN INITIALIZER ---'
-Write-Verbose '-------------------------------'
+﻿#Requires -Modules @{ ModuleName = 'Microsoft.Graph.Authentication'; ModuleVersion = '2.28.0' }

@@ -1,69 +1,62 @@
-# {{ NAME }}
+# IntuneOperator
 
-{{ DESCRIPTION }}
+## IntuneOperator
 
-## Prerequisites
-
-This uses the following external resources:
-- The [PSModule framework](https://github.com/PSModule/Process-PSModule) for building, testing and publishing the module.
+IntuneOperator is a PowerShell module for Intune that helps managing your Endpoint fleet.
 
 ## Installation
 
 To install the module from the PowerShell Gallery, you can use the following command:
 
 ```powershell
-Install-PSResource -Name {{ NAME }}
-Import-Module -Name {{ NAME }}
+Install-PSResource -Name IntuneOperator
+Import-Module -Name IntuneOperator
 ```
 
 ## Usage
 
 Here is a list of example that are typical use cases for the module.
 
-### Example 1: Greet an entity
+### Example 1: Get-IntuneDeviceLogin
 
-Provide examples for typical commands that a user would like to do with the module.
-
-```powershell
-Greet-Entity -Name 'World'
-Hello, World!
-```
-
-### Example 2
-
-Provide examples for typical commands that a user would like to do with the module.
+As for March 2026 there is one cmdlet: `Get-IntuneDeviceLogin`.
 
 ```powershell
-Import-Module -Name PSModuleTemplate
+Get-IntuneDeviceLogin -DeviceName PC-001
 ```
 
-### Find more examples
+```text
+DeviceName        : PC-001
+UserPrincipalName : john.doe@contoso.com
+DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
+UserId            : a5b6c7d8-e9f0-1a2b-3c4d-5e6f7a8b9c0d
+LastLogonDateTime : 3/9/2026 8:14:00 AM
 
-To find more examples of how to use the module, please refer to the [examples](examples) folder.
+DeviceName        : PC-001
+UserPrincipalName : jane.smith@contoso.com
+DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
+UserId            : b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e
+LastLogonDateTime : 3/7/2026 2:45:00 PM
+```
 
-Alternatively, you can use the Get-Command -Module 'This module' to find more commands that are available in the module.
-To find examples of each of the commands you can use Get-Help -Examples 'CommandName'.
+```powershell
+Get-IntuneDeviceLogin -UserPrincipalName john.doe@contoso.com
+```
 
-## Documentation
+```text
+DeviceName        : PC-001
+UserPrincipalName : john.doe@contoso.com
+DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
+UserId            : a5b6c7d8-e9f0-1a2b-3c4d-5e6f7a8b9c0d
+LastLogonDateTime : 3/9/2026 8:14:00 AM
 
-Link to further documentation if available, or describe where in the repository users can find more detailed documentation about
-the module's functions and features.
-
-## Contributing
-
-Coder or not, you can contribute to the project! We welcome all contributions.
-
-### For Users
-
-If you don't code, you still sit on valuable information that can make this project even better. If you experience that the
-product does unexpected things, throw errors or is missing functionality, you can help by submitting bugs and feature requests.
-Please see the issues tab on this project and submit a new issue that matches your needs.
-
-### For Developers
-
-If you do code, we'd love to have your contributions. Please read the [Contribution guidelines](CONTRIBUTING.md) for more information.
-You can either help by picking up an existing issue or submit a new one if you have an idea for a new feature or improvement.
+DeviceName        : PC-042
+UserPrincipalName : john.doe@contoso.com
+DeviceId          : f7e6d5c4-b3a2-1f0e-9d8c-7b6a5f4e3d2c
+UserId            : a5b6c7d8-e9f0-1a2b-3c4d-5e6f7a8b9c0d
+LastLogonDateTime : 3/5/2026 9:33:00 AM
+```
 
 ## Acknowledgements
 
-Here is a list of people and projects that helped this project in some way.
+- [Process-Module](https://github.com/PSModule/Process-PSModule) by [Marius Storhaug](https://github.com/MariusStorhaug). Contains the entire build pipeline. This is greatly beneficial and helps me just concentrating on building the cmdlets.
