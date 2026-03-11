@@ -6,7 +6,7 @@
 
 ## Introduction
 
-[IntuneOperator](https://hjorslev.github.io/IntuneOperator/) is a PowerShell module for Intune that helps Endpoint Specialists manage
+[IntuneOperator](https://www.powershellgallery.com/packages/IntuneOperator/) is a PowerShell module for Intune that helps Endpoint Specialists manage
 their Intune environment with small, practical tools for daily tasks.
 
 ## Installation
