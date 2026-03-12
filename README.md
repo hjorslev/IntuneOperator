@@ -1,8 +1,13 @@
 # IntuneOperator
 
-## IntuneOperator
+| GH Actions                                                                                                                                                                                                                             | PS Gallery                                                                                                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hjorslev/IntuneOperator/Process-PSModule.yml?logo=GitHub&label=CI%2FCD)](https://github.com/hjorslev/IntuneOperator/actions/workflows/CI.yml) | [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/IntuneOperator?style=flat&logo=PowerShell)](https://www.powershellgallery.com/packages/IntuneOperator) |
 
-IntuneOperator is a PowerShell module for Intune that helps managing your Endpoint fleet.
+## Introduction
+
+[IntuneOperator](https://www.powershellgallery.com/packages/IntuneOperator/) is a PowerShell module for Intune that helps Endpoint Specialists manage
+their Intune environment with small, practical tools for daily tasks.
 
 ## Installation
 
