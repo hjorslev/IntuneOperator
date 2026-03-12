@@ -33,10 +33,10 @@ Describe 'Get-IntuneDeviceLogin' {
         It 'Should return a PSCustomObject with logged-on user information' {
             # Arrange
             $mockDevice = [PSCustomObject]@{
-                id            = $testDeviceId
-                deviceName    = $testDeviceName
+                id              = $testDeviceId
+                deviceName      = $testDeviceName
                 operatingSystem = $testDeviceType
-                usersLoggedOn = @(
+                usersLoggedOn   = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
                         lastLogOnDateTime = $testLastLogonDateTime
@@ -229,10 +229,10 @@ Describe 'Get-IntuneDeviceLogin' {
             }
 
             $mockDevice = [PSCustomObject]@{
-                id            = $testDeviceId
-                deviceName    = $testDeviceName
+                id              = $testDeviceId
+                deviceName      = $testDeviceName
                 operatingSystem = $testDeviceType
-                usersLoggedOn = @(
+                usersLoggedOn   = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
                         lastLogOnDateTime = '2024-03-05T10:30:00Z'
@@ -593,10 +593,10 @@ Describe 'Get-IntuneDeviceLogin' {
             $mockDevicesResponse = [PSCustomObject]@{
                 value = @(
                     [PSCustomObject]@{
-                        id            = $testDeviceId1
-                        deviceName    = 'DEVICE-001'
+                        id              = $testDeviceId1
+                        deviceName      = 'DEVICE-001'
                         operatingSystem = 'Windows'
-                        usersLoggedOn = @(
+                        usersLoggedOn   = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
                                 lastLogOnDateTime = '2024-03-05T10:30:00Z'
@@ -648,10 +648,10 @@ Describe 'Get-IntuneDeviceLogin' {
             $mockDevicesResponse = [PSCustomObject]@{
                 value = @(
                     [PSCustomObject]@{
-                        id            = $testDeviceId1
-                        deviceName    = 'DEVICE-001'
+                        id              = $testDeviceId1
+                        deviceName      = 'DEVICE-001'
                         operatingSystem = 'Windows'
-                        usersLoggedOn = @(
+                        usersLoggedOn   = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
                                 lastLogOnDateTime = '2024-03-05T10:30:00Z'
@@ -748,10 +748,10 @@ Describe 'Get-IntuneDeviceLogin' {
             $mockDevicesResponse = [PSCustomObject]@{
                 value = @(
                     [PSCustomObject]@{
-                        id            = $testDeviceId1
-                        deviceName    = 'DEVICE-001'
+                        id              = $testDeviceId1
+                        deviceName      = 'DEVICE-001'
                         operatingSystem = 'Windows'
-                        usersLoggedOn = @(
+                        usersLoggedOn   = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
                                 lastLogOnDateTime = '2024-03-05T10:30:00Z'
@@ -1076,10 +1076,10 @@ Describe 'Get-IntuneDeviceLogin' {
             $mockDevicesResponse = [PSCustomObject]@{
                 value = @(
                     [PSCustomObject]@{
-                        id            = $testDeviceId1
-                        deviceName    = 'DEVICE-001'
+                        id              = $testDeviceId1
+                        deviceName      = 'DEVICE-001'
                         operatingSystem = 'Windows'
-                        usersLoggedOn = @(
+                        usersLoggedOn   = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
                                 lastLogOnDateTime = '2024-03-05T10:30:00Z'

@@ -1,4 +1,6 @@
-﻿function Get-IntuneDeviceLogin {
+﻿#Requires -Modules @{ ModuleName = 'Microsoft.Graph.Authentication'; ModuleVersion = '2.28.0' }
+
+function Get-IntuneDeviceLogin {
     <#
     .SYNOPSIS
     Retrieves logged-on user info for an Intune-managed device by DeviceId, DeviceName, UserPrincipalName, or UserId.
