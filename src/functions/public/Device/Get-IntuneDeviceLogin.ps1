@@ -59,6 +59,7 @@
     PSCustomObject with the following properties
     - DeviceId (string)
     - DeviceName (string)
+    - OperatingSystem (string)
     - UserId (string)
     - UserPrincipalName (string)
     - LastLogonDateTime (datetime)
@@ -168,6 +169,7 @@
                     $user = Resolve-EntraUserById -UserId $entry.userId
                     [PSCustomObject]@{
                         DeviceName        = $device.deviceName
+                        OperatingSystem   = $device.operatingSystem
                         UserPrincipalName = $user.userPrincipalName
                         DeviceId          = $device.id
                         UserId            = $entry.userId
@@ -269,6 +271,7 @@
                         $user = Resolve-EntraUserById -UserId $entry.userId
                         [PSCustomObject]@{
                             DeviceName        = $device.deviceName
+                            OperatingSystem   = $device.operatingSystem
                             UserPrincipalName = $user.userPrincipalName
                             DeviceId          = $device.id
                             UserId            = $entry.userId
@@ -318,7 +321,7 @@
 
                 # Get all managed devices with usersLoggedOn property.
                 # Invoke-GraphGet already handles pagination, so we query once and filter client-side.
-                $uri = "$baseUri`?`$select=id,deviceName,usersLoggedOn"
+                $uri = "$baseUri`?`$select=id,deviceName,operatingSystem,usersLoggedOn"
                 $resp = Invoke-GraphGet -Uri $uri
 
                 $allDevices = @()
@@ -356,6 +359,7 @@
                         $user = Resolve-EntraUserById -UserId $targetUserId
                         [PSCustomObject]@{
                             DeviceName        = $device.deviceName
+                            OperatingSystem   = $device.operatingSystem
                             UserPrincipalName = $user.userPrincipalName
                             DeviceId          = $device.id
                             UserId            = $targetUserId

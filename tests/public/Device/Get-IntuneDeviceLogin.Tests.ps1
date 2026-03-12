@@ -21,6 +21,8 @@ Describe 'Get-IntuneDeviceLogin' {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testDeviceName = 'DEVICE-001'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testDeviceType = 'Windows'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserPrincipalName = 'user@contoso.com'
@@ -33,6 +35,7 @@ Describe 'Get-IntuneDeviceLogin' {
             $mockDevice = [PSCustomObject]@{
                 id            = $testDeviceId
                 deviceName    = $testDeviceName
+                operatingSystem = $testDeviceType
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
@@ -56,6 +59,7 @@ Describe 'Get-IntuneDeviceLogin' {
             $result | Should -Not -BeNullOrEmpty
             $result.DeviceId | Should -Be $testDeviceId
             $result.DeviceName | Should -Be $testDeviceName
+            $result.OperatingSystem | Should -Be $testDeviceType
             $result.UserId | Should -Be $testUserId
             $result.UserPrincipalName | Should -Be $testUserPrincipalName
             $result.LastLogonDateTime | Should -BeOfType [datetime]
@@ -210,6 +214,8 @@ Describe 'Get-IntuneDeviceLogin' {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testDeviceName = 'DEVICE-001'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+            $testDeviceType = 'Windows'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserId = 'u1e1a1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
             $testUserPrincipalName = 'user@contoso.com'
@@ -225,6 +231,7 @@ Describe 'Get-IntuneDeviceLogin' {
             $mockDevice = [PSCustomObject]@{
                 id            = $testDeviceId
                 deviceName    = $testDeviceName
+                operatingSystem = $testDeviceType
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $testUserId
@@ -248,6 +255,7 @@ Describe 'Get-IntuneDeviceLogin' {
             # Assert
             $result | Should -Not -BeNullOrEmpty
             $result.DeviceName | Should -Be $testDeviceName
+            $result.OperatingSystem | Should -Be $testDeviceType
             $result.UserPrincipalName | Should -Be $testUserPrincipalName
             Assert-MockCalled -CommandName 'Resolve-IntuneDeviceByName' -Times 1 -Exactly
             Assert-MockCalled -CommandName 'Invoke-GraphGet' -Times 1 -Exactly
@@ -587,6 +595,7 @@ Describe 'Get-IntuneDeviceLogin' {
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-001'
+                        operatingSystem = 'Windows'
                         usersLoggedOn = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
@@ -624,6 +633,7 @@ Describe 'Get-IntuneDeviceLogin' {
             $results.Count | Should -Be 1
             $results[0].DeviceId | Should -Be $testDeviceId1
             $results[0].DeviceName | Should -Be 'DEVICE-001'
+            $results[0].OperatingSystem | Should -Be 'Windows'
             $results[0].UserId | Should -Be $testUserId
             $results[0].UserPrincipalName | Should -Be $testUserPrincipalName
         }
@@ -640,6 +650,7 @@ Describe 'Get-IntuneDeviceLogin' {
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-001'
+                        operatingSystem = 'Windows'
                         usersLoggedOn = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
@@ -739,6 +750,7 @@ Describe 'Get-IntuneDeviceLogin' {
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-001'
+                        operatingSystem = 'Windows'
                         usersLoggedOn = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
@@ -1066,6 +1078,7 @@ Describe 'Get-IntuneDeviceLogin' {
                     [PSCustomObject]@{
                         id            = $testDeviceId1
                         deviceName    = 'DEVICE-001'
+                        operatingSystem = 'Windows'
                         usersLoggedOn = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
@@ -1085,8 +1098,12 @@ Describe 'Get-IntuneDeviceLogin' {
             # Assert
             $results.Count | Should -Be 1
             $results[0].DeviceId | Should -Be $testDeviceId1
+            $results[0].OperatingSystem | Should -Be 'Windows'
             $results[0].UserId | Should -Be $testUserId
             $results[0].UserPrincipalName | Should -Be $testUserPrincipalName
+            Assert-MockCalled -CommandName 'Invoke-GraphGet' -Times 1 -Exactly -ParameterFilter {
+                $Uri -match 'managedDevices\?\$select=id,deviceName,operatingSystem,usersLoggedOn'
+            }
         }
 
         It 'Should reject invalid GUID format for UserId' {
