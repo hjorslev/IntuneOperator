@@ -12,7 +12,7 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
     Context 'Parameter set ByName — matching name' {
         It 'Should return one row per device with mapped fields' {
             # Arrange
-            $mockScriptId   = 'f1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $mockScriptId = 'f1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             $mockScriptName = 'BitLocker detection and remediation'
 
             $mockListResponse = [PSCustomObject]@{
@@ -73,7 +73,7 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
 
         It 'Should return multiple rows when multiple devices have run states' {
             # Arrange
-            $mockScriptId   = 'a1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $mockScriptId = 'a1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             $mockScriptName = 'Windows Update remediation'
 
             $mockListResponse = [PSCustomObject]@{
@@ -172,7 +172,7 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
     Context 'Parameter set ById' {
         It 'Should query by ID and resolve the display name' {
             # Arrange
-            $mockScriptId   = 'b1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $mockScriptId = 'b1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             $mockScriptName = 'Defender remediation'
 
             $mockDetailResponse = [PSCustomObject]@{
@@ -341,7 +341,7 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
     Context 'Pipeline input' {
         It 'Should accept Name via pipeline by property name' {
             # Arrange
-            $mockScriptId   = 'e1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $mockScriptId = 'e1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
             $mockScriptName = 'Pipeline input remediation'
 
             $mockListResponse = [PSCustomObject]@{
@@ -385,7 +385,7 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
 
             # Act — pipe an object whose .Name property matches the -Name parameter
             $pipeInput = [PSCustomObject]@{ Name = $mockScriptName }
-            $result    = @($pipeInput | Get-IntuneRemediationDeviceStatus)
+            $result = @($pipeInput | Get-IntuneRemediationDeviceStatus)
 
             # Assert
             $result.Count | Should -Be 1

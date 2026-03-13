@@ -173,7 +173,7 @@
         # ------------------------------------------------------------------ #
         foreach ($script in $targetScripts) {
             $remediationName = [string]$script.displayName
-            $remediationId   = [string]$script.id
+            $remediationId = [string]$script.id
 
             Write-Verbose -Message "Retrieving device run states for remediation '$remediationName' ($remediationId)"
 
@@ -202,21 +202,21 @@
 
             foreach ($state in $runStates) {
                 # Resolve device fields from the expanded managedDevice object
-                $device         = $null
-                $deviceId       = $null
-                $deviceName     = $null
-                $upn            = $null
+                $device = $null
+                $deviceId = $null
+                $deviceName = $null
+                $upn = $null
 
                 if ($null -ne $state.managedDevice) {
-                    $device     = $state.managedDevice
-                    $deviceId   = [string]$device.id
+                    $device = $state.managedDevice
+                    $deviceId = [string]$device.id
                     $deviceName = [string]$device.deviceName
-                    $upn        = [string]$device.userPrincipalName
+                    $upn = [string]$device.userPrincipalName
                 }
 
                 # Resolve last-state timestamp
                 $lastUpdate = $null
-                $rawDate    = $state.lastStateUpdateDateTime
+                $rawDate = $state.lastStateUpdateDateTime
                 if ($null -ne $rawDate -and -not [string]::IsNullOrWhiteSpace([string]$rawDate)) {
                     try {
                         $lastUpdate = [datetime]$rawDate
