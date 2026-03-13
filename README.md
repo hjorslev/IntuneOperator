@@ -24,7 +24,7 @@ Here is a list of example that are typical use cases for the module.
 
 ### Example 1: Get-IntuneDeviceLogin
 
-As for March 2026 the module has three cmdlets: `Get-IntuneDeviceLogin`, `Get-IntuneRemediationSummary` and `Get-IntuneRemediationDeviceStatus`.
+As of March 2026, the module has three cmdlets: `Get-IntuneDeviceLogin`, `Get-IntuneRemediationSummary` and `Get-IntuneRemediationDeviceStatus`.
 
 ```powershell
 Get-IntuneDeviceLogin -DeviceName PC-001
