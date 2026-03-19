@@ -3,11 +3,11 @@
 function Get-IntuneDevice {
     <#
     .SYNOPSIS
-    Retrieves Intune managed device details by DeviceId or DeviceName.
+    Retrieves Intune managed device details by DeviceId, DeviceName, or primary user UPN.
 
     .DESCRIPTION
     Queries Microsoft Graph (beta) for managed device details and returns a compact device summary.
-    Supports lookup by managed device ID or by device name.
+    Supports lookup by managed device ID, by device name, or by the primary user's UPN.
 
     Requires an authenticated Graph session with appropriate scopes.
 
@@ -21,6 +21,9 @@ function Get-IntuneDevice {
     The device name to resolve in Intune managed devices. Parameter set: ByName.
     If multiple devices share the same name, all matches are returned.
 
+    .PARAMETER UserPrincipalName
+    The UPN of the primary user whose devices should be returned. Parameter set: ByUser.
+    If the user has multiple enrolled devices, all matches are returned.
     .EXAMPLE
     Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All","User.Read.All"
     Get-IntuneDevice -DeviceId "c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a"
@@ -32,8 +35,13 @@ function Get-IntuneDevice {
 
     Resolves device by name and returns summary details for each matching managed device.
 
+    .EXAMPLE
+    Get-IntuneDevice -UserPrincipalName jane.doe@contoso.com
+
+    Returns summary details for all managed devices whose primary user is jane.doe@contoso.com.
+
     .INPUTS
-    System.String (DeviceId or DeviceName via pipeline/property name)
+    System.String (DeviceId, DeviceName, or UserPrincipalName via pipeline/property name)
 
     .OUTPUTS
     PSCustomObject with the following properties
@@ -71,7 +79,17 @@ function Get-IntuneDevice {
         )]
         [ValidateNotNullOrEmpty()]
         [Alias('Name', 'ComputerName')]
-        [string]$DeviceName
+        [string]$DeviceName,
+
+        [Parameter(
+            ParameterSetName = 'ByUser',
+            Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateNotNullOrEmpty()]
+        [Alias('UPN', 'PrimaryUser')]
+        [string]$UserPrincipalName
     )
 
     begin {
@@ -173,6 +191,60 @@ function Get-IntuneDevice {
                 }
 
                 # Resolve-IntuneDeviceByName already returns selected managed device fields.
+                foreach ($device in $deviceSummaries) {
+                    if (-not $device) {
+                        continue
+                    }
+
+                    # Map to public output contract.
+                    ConvertTo-IntuneDeviceSummary -Device $device
+                }
+            }
+
+            'ByUser' {
+                Write-Verbose -Message "Resolving managed device(s) by user: $UserPrincipalName"
+
+                try {
+                    $deviceSummaries = Resolve-IntuneDeviceByUser -UserPrincipalName $UserPrincipalName
+                } catch {
+                    $errorMessage = $_.Exception.Message
+                    # Distinguish user not found from actual Graph errors.
+                    if ($errorMessage -match 'Request_ResourceNotFound|NotFound|404') {
+                        $exception = [Exception]::new("Managed device not found for user '$UserPrincipalName': $errorMessage", $_.Exception)
+                        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                            $exception,
+                            'DeviceUserNotFound',
+                            [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+                            $UserPrincipalName
+                        )
+                        $PSCmdlet.WriteError($errorRecord)
+                        return
+                    }
+
+                    $exception = [Exception]::new("Failed to resolve devices for user '$UserPrincipalName': $errorMessage", $_.Exception)
+                    $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                        $exception,
+                        'DeviceUserLookupFailed',
+                        [System.Management.Automation.ErrorCategory]::NotSpecified,
+                        $UserPrincipalName
+                    )
+                    $PSCmdlet.ThrowTerminatingError($errorRecord)
+                }
+
+                # Empty result set: user has no enrolled devices.
+                if ($null -eq $deviceSummaries -or $deviceSummaries.Count -eq 0) {
+                    $exception = [Exception]::new("No managed devices found for user '$UserPrincipalName'.")
+                    $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                        $exception,
+                        'DeviceUserNotFound',
+                        [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+                        $UserPrincipalName
+                    )
+                    $PSCmdlet.WriteError($errorRecord)
+                    return
+                }
+
+                # Resolve-IntuneDeviceByUser already returns selected managed device fields.
                 foreach ($device in $deviceSummaries) {
                     if (-not $device) {
                         continue
