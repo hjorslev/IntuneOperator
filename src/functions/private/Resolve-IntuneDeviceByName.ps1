@@ -46,23 +46,71 @@
     }
 
     process {
-        # deviceName is case-insensitive in OData. Exact match.
-        $encoded = [uri]::EscapeDataString("deviceName eq '$Name'")
-        $uri = "$baseUri`?`$filter=$encoded&`$select=id,deviceName"
+        # Escape only the string literal content; keep OData filter syntax intact.
+        $escapedName = $Name.Replace("'", "''")
+        $filter = "deviceName eq '$escapedName'"
+        $select = 'id,deviceName,userPrincipalName,manufacturer,model,operatingSystem,serialNumber,enrolledByUserId,complianceState,lastSyncDateTime'
+        $candidateUris = @(
+            "$baseUri`?`$filter=$filter&`$select=$select",
+            "$baseUri`?`$filter=$filter",
+            "$baseUri`?`$select=$select",
+            $baseUri
+        )
 
-        $resp = Invoke-GraphGet -Uri $uri
+        $resp = $null
+        $lastBadRequestError = $null
 
-        if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
+        foreach ($candidateUri in $candidateUris) {
+            try {
+                $resp = Invoke-GraphGet -Uri $candidateUri
+                break
+            } catch {
+                $errorMessage = $_.Exception.Message
+                if ($errorMessage -match 'BadRequest|400') {
+                    $lastBadRequestError = $_
+                    Write-Verbose -Message "Managed device query returned BadRequest for URI '$candidateUri'. Trying next fallback."
+                    continue
+                }
+
+                throw
+            }
+        }
+
+        if ($null -eq $resp -and $null -ne $lastBadRequestError) {
+            throw $lastBadRequestError
+        }
+
+        $devices = @()
+        if ($null -ne $resp) {
+            if ($null -ne $resp.value) {
+                $devices = @($resp.value)
+            } else {
+                $devices = @($resp)
+            }
+        }
+
+        # Keep exact name semantics even after fallback to unfiltered Graph query.
+        $matchedDevices = @($devices | Where-Object -FilterScript { [string]$_.deviceName -ieq $Name })
+
+        if ($matchedDevices.Count -eq 0) {
             Write-Verbose -Message "No managed devices found with deviceName '$Name'."
             return [PSCustomObject[]]@()
         }
 
-        # Return PSCustomObject with Id and DeviceName
-        $resp.value | ForEach-Object -Process {
+        # Return managed device objects with fields required by downstream callers.
+        $matchedDevices | ForEach-Object -Process {
             [PSCustomObject]@{
-                Id         = $_.id
-                DeviceName = $_.deviceName
+                id                = $_.id
+                deviceName        = $_.deviceName
+                userPrincipalName = $_.userPrincipalName
+                manufacturer      = $_.manufacturer
+                model             = $_.model
+                operatingSystem   = $_.operatingSystem
+                serialNumber      = $_.serialNumber
+                enrolledByUserId  = $_.enrolledByUserId
+                complianceState   = $_.complianceState
+                lastSyncDateTime  = $_.lastSyncDateTime
             }
         }
-    }
-}
+    } # Process
+} # Cmdlet
