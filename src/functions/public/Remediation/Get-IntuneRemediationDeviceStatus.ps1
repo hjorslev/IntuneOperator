@@ -89,6 +89,7 @@
     )
 
     begin {
+        # Expand managedDevice so device identity fields are available in each run-state row.
         $expandQuery = '$expand=managedDevice($select=id,deviceName,userPrincipalName)'
     }
 
@@ -104,7 +105,7 @@
                 displayName = $Id   # will be overwritten once we fetch the real name
             }
 
-            # Fetch the actual display name so output is readable
+            # Resolve display name for friendlier output while still accepting direct ID input.
             try {
                 $scriptDetailUri = "https://graph.microsoft.com/beta/deviceManagement/deviceHealthScripts/$($Id)?`$select=id,displayName"
                 $scriptDetail = Invoke-GraphGet -Uri $scriptDetailUri
@@ -144,6 +145,7 @@
                 $PSCmdlet.ThrowTerminatingError($ErrorRecord)
             }
 
+            # Normalize payload shape before wildcard name matching.
             $allScripts = @()
             if ($null -ne $listResponse) {
                 if ($null -ne $listResponse.value) {
@@ -186,6 +188,7 @@
                 continue
             }
 
+            # Normalize run-state list: handle both .value and direct response shapes.
             $runStates = @()
             if ($null -ne $runStatesResponse) {
                 if ($null -ne $runStatesResponse.value) {
@@ -218,6 +221,7 @@
                 $lastUpdate = $null
                 $rawDate = $state.lastStateUpdateDateTime
                 if ($null -ne $rawDate -and -not [string]::IsNullOrWhiteSpace([string]$rawDate)) {
+                    # Guard output typing: invalid timestamps should not break object emission.
                     try {
                         $lastUpdate = [datetime]$rawDate
                     } catch {
@@ -225,6 +229,7 @@
                     }
                 }
 
+                # Cast Graph fields to predictable output types for downstream filtering/export.
                 [PSCustomObject]@{
                     RemediationName       = $remediationName
                     RemediationId         = $remediationId

@@ -38,6 +38,7 @@
     param()
 
     begin {
+        # Query all proactive remediations once and process summaries per script.
         $listUri = 'https://graph.microsoft.com/beta/deviceManagement/deviceHealthScripts?$select=id,displayName'
     }
 
@@ -68,6 +69,7 @@
             $PSCmdlet.ThrowTerminatingError($ErrorRecord)
         }
 
+        # Normalize payload shape: Graph may return either an object with .value or a direct object/array.
         $scripts = @()
         if ($null -ne $scriptsResponse) {
             if ($null -ne $scriptsResponse.value) {
@@ -97,6 +99,7 @@
                 continue
             }
 
+            # Normalize run summary root before probing nested alternatives.
             $summary = $summaryResponse
             if ($null -ne $summaryResponse.value) {
                 if ($summaryResponse.value -is [array]) {
@@ -167,6 +170,7 @@
                 $summary = $resolvedSummary
             }
 
+            # Prefer status from script metadata; fall back to summary payload when missing.
             $status = Get-FirstPropertyValue -InputObject $script -PropertyNames @(
                 'status'
             ) -DefaultValue $null
@@ -179,6 +183,7 @@
                 ) -DefaultValue $null
             }
 
+            # Counter aliases vary by tenant/API shape, so probe multiple known names.
             $withoutIssues = [int](Get-FirstPropertyValue -InputObject $summary -PropertyNames @(
                     'noIssueDetectedDeviceCount', 'withoutIssues', 'noIssueCount', 'noIssueDeviceCount', 'devicesWithoutIssues'
                 ) -DefaultValue 0)
@@ -195,6 +200,7 @@
                     'issueRemediatedCumulativeDeviceCount', 'totalRemediated', 'remediatedCount', 'remediatedDeviceCount', 'devicesRemediated'
                 ) -DefaultValue 0)
 
+            # If summary counters are empty, derive best-effort values from remediation history.
             if ($withoutIssues -eq 0 -and $withIssues -eq 0 -and $issueFixed -eq 0 -and $issueRecurred -eq 0 -and $totalRemediated -eq 0) {
                 $historyUri = "https://graph.microsoft.com/beta/deviceManagement/deviceHealthScripts/$($script.id)/getRemediationHistory"
                 try {
@@ -258,6 +264,7 @@
                 }
             }
 
+            # Resolve a display-friendly status when no explicit status was returned.
             if ([string]::IsNullOrWhiteSpace([string]$status)) {
                 $pendingCount = [int](Get-FirstPropertyValue -InputObject $summary -PropertyNames @(
                         'detectionScriptPendingDeviceCount'
