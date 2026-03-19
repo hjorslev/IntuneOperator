@@ -24,7 +24,7 @@ Here is a list of example that are typical use cases for the module.
 
 ### Example 1: Get-IntuneDeviceLogin
 
-As for March 2026 there is one cmdlet: `Get-IntuneDeviceLogin`.
+As of March 2026, the module has four cmdlets: `Get-IntuneDeviceLogin`, `Get-IntuneLapsPassword`, `Get-IntuneRemediationSummary` and `Get-IntuneRemediationDeviceStatus`.
 
 ```powershell
 Get-IntuneDeviceLogin -DeviceName PC-001
@@ -32,16 +32,11 @@ Get-IntuneDeviceLogin -DeviceName PC-001
 
 ```text
 DeviceName        : PC-001
+OperatingSystem   : Windows
 UserPrincipalName : john.doe@contoso.com
 DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
 UserId            : a5b6c7d8-e9f0-1a2b-3c4d-5e6f7a8b9c0d
 LastLogonDateTime : 3/9/2026 8:14:00 AM
-
-DeviceName        : PC-001
-UserPrincipalName : jane.smith@contoso.com
-DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
-UserId            : b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e
-LastLogonDateTime : 3/7/2026 2:45:00 PM
 ```
 
 ```powershell
@@ -50,16 +45,86 @@ Get-IntuneDeviceLogin -UserPrincipalName john.doe@contoso.com
 
 ```text
 DeviceName        : PC-001
+OperatingSystem   : Windows
 UserPrincipalName : john.doe@contoso.com
 DeviceId          : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
 UserId            : a5b6c7d8-e9f0-1a2b-3c4d-5e6f7a8b9c0d
 LastLogonDateTime : 3/9/2026 8:14:00 AM
 
 DeviceName        : PC-042
+OperatingSystem   : Windows
 UserPrincipalName : john.doe@contoso.com
 DeviceId          : f7e6d5c4-b3a2-1f0e-9d8c-7b6a5f4e3d2c
 UserId            : a5b6c7d8-e9f0-1a2b-3c4d-5e6f7a8b9c0d
 LastLogonDateTime : 3/5/2026 9:33:00 AM
+```
+
+### Example 2: Get-IntuneRemediationSummary
+
+```powershell
+Get-IntuneRemediationSummary
+```
+
+```text
+Name            : Fix BitLocker
+Status          : Completed
+WithoutIssues   : 214
+WithIssues      : 3
+IssueFixed      : 47
+IssueRecurred   : 1
+TotalRemediated : 47
+
+Name            : Disable NetBIOS
+Status          : Completed
+WithoutIssues   : 217
+WithIssues      : 0
+IssueFixed      : 0
+IssueRecurred   : 0
+TotalRemediated : 0
+```
+
+### Example 3: Get-IntuneRemediationDeviceStatus
+
+```powershell
+Get-IntuneRemediationDeviceStatus -Name 'BitLocker detection and remediation'
+```
+
+```text
+RemediationName       : BitLocker detection and remediation
+RemediationId         : b2bf3efa-b16d-4936-866c-560592e4d35a
+DeviceId              : c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a
+DeviceName            : PC-001
+UserPrincipalName     : john.doe@contoso.com
+LastStateUpdate       : 3/11/2026 6:00:00 AM
+DetectionState        : success
+RemediationState      : success
+PreRemediationOutput  : BitLocker status: Off
+PostRemediationOutput : BitLocker status: On
+DetectionOutput       :
+PreRemediationError   :
+RemediationError      :
+DetectionError        :
+
+RemediationName       : BitLocker detection and remediation
+RemediationId         : b2bf3efa-b16d-4936-866c-560592e4d35a
+DeviceId              : f7e6d5c4-b3a2-1f0e-9d8c-7b6a5f4e3d2c
+DeviceName            : PC-042
+UserPrincipalName     : jane.smith@contoso.com
+LastStateUpdate       : 3/11/2026 6:05:00 AM
+DetectionState        : fail
+RemediationState      : remediationFailed
+PreRemediationOutput  : BitLocker status: Off
+PostRemediationOutput : BitLocker status: Off
+DetectionOutput       :
+PreRemediationError   :
+RemediationError      : Exit code: 1 - Access denied
+DetectionError        :
+```
+
+You can also pipe from `Get-IntuneRemediationSummary` to only inspect remediations that have devices with issues:
+
+```powershell
+Get-IntuneRemediationSummary | Where-Object WithIssues -gt 0 | Get-IntuneRemediationDeviceStatus
 ```
 
 ## Acknowledgements

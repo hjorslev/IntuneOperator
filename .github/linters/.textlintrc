@@ -158,11 +158,6 @@
                 "ZIP",
                 "McKenzie",
                 "McConnell",
-                "ID",
-                [
-                    "id['’]?s",
-                    "IDs"
-                ],
                 [
                     "backwards compatible",
                     "backward compatible"
