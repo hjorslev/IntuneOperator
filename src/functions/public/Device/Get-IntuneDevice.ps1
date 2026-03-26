@@ -18,8 +18,9 @@ function Get-IntuneDevice {
     The Intune managed device identifier (GUID). Parameter set: ById.
 
     .PARAMETER DeviceName
-    The device name to resolve in Intune managed devices. Parameter set: ByName.
+    One or more device names to resolve in Intune managed devices. Parameter set: ByName.
     If multiple devices share the same name, all matches are returned.
+    Accepts multiple names via array or pipeline.
 
     .PARAMETER UserPrincipalName
     The UPN of the primary user whose devices should be returned. Parameter set: ByUser.
@@ -79,7 +80,7 @@ function Get-IntuneDevice {
         )]
         [ValidateNotNullOrEmpty()]
         [Alias('Name', 'ComputerName')]
-        [string]$DeviceName,
+        [string[]]$DeviceName,
 
         [Parameter(
             ParameterSetName = 'ByUser',
@@ -148,56 +149,59 @@ function Get-IntuneDevice {
             }
 
             'ByName' {
-                Write-Verbose -Message "Resolving managed device(s) by name: $DeviceName"
+                # Iterate through each provided device name.
+                foreach ($currentDeviceName in $DeviceName) {
+                    Write-Verbose -Message "Resolving managed device(s) by name: $currentDeviceName"
 
-                try {
-                    $deviceSummaries = Resolve-IntuneDeviceByName -Name $DeviceName
-                } catch {
-                    $errorMessage = $_.Exception.Message
-                    # Distinguish name resolution failure (no match) from actual Graph errors.
-                    if ($errorMessage -match 'Request_ResourceNotFound|NotFound|404') {
-                        $exception = [Exception]::new("Managed device not found for name '$DeviceName': $errorMessage", $_.Exception)
+                    try {
+                        $deviceSummaries = Resolve-IntuneDeviceByName -Name $currentDeviceName
+                    } catch {
+                        $errorMessage = $_.Exception.Message
+                        # Distinguish name resolution failure (no match) from actual Graph errors.
+                        if ($errorMessage -match 'Request_ResourceNotFound|NotFound|404') {
+                            $exception = [Exception]::new("Managed device not found for name '$currentDeviceName': $errorMessage", $_.Exception)
+                            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                                $exception,
+                                'DeviceNameNotFound',
+                                [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+                                $currentDeviceName
+                            )
+                            $PSCmdlet.WriteError($errorRecord)
+                            continue
+                        }
+
+                        $exception = [Exception]::new("Failed to resolve device name '$currentDeviceName': $errorMessage", $_.Exception)
+                        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                            $exception,
+                            'DeviceNameLookupFailed',
+                            [System.Management.Automation.ErrorCategory]::NotSpecified,
+                            $currentDeviceName
+                        )
+                        $PSCmdlet.ThrowTerminatingError($errorRecord)
+                    }
+
+                    # Empty result set: name does not match any device.
+                    if ($null -eq $deviceSummaries -or $deviceSummaries.Count -eq 0) {
+                        $exception = [Exception]::new("Managed device not found for name '$currentDeviceName'.")
                         $errorRecord = [System.Management.Automation.ErrorRecord]::new(
                             $exception,
                             'DeviceNameNotFound',
                             [System.Management.Automation.ErrorCategory]::ObjectNotFound,
-                            $DeviceName
+                            $currentDeviceName
                         )
                         $PSCmdlet.WriteError($errorRecord)
-                        return
-                    }
-
-                    $exception = [Exception]::new("Failed to resolve device name '$DeviceName': $errorMessage", $_.Exception)
-                    $errorRecord = [System.Management.Automation.ErrorRecord]::new(
-                        $exception,
-                        'DeviceNameLookupFailed',
-                        [System.Management.Automation.ErrorCategory]::NotSpecified,
-                        $DeviceName
-                    )
-                    $PSCmdlet.ThrowTerminatingError($errorRecord)
-                }
-
-                # Empty result set: name does not match any device.
-                if ($null -eq $deviceSummaries -or $deviceSummaries.Count -eq 0) {
-                    $exception = [Exception]::new("Managed device not found for name '$DeviceName'.")
-                    $errorRecord = [System.Management.Automation.ErrorRecord]::new(
-                        $exception,
-                        'DeviceNameNotFound',
-                        [System.Management.Automation.ErrorCategory]::ObjectNotFound,
-                        $DeviceName
-                    )
-                    $PSCmdlet.WriteError($errorRecord)
-                    return
-                }
-
-                # Resolve-IntuneDeviceByName already returns selected managed device fields.
-                foreach ($device in $deviceSummaries) {
-                    if (-not $device) {
                         continue
                     }
 
-                    # Map to public output contract.
-                    ConvertTo-IntuneDeviceSummary -Device $device
+                    # Resolve-IntuneDeviceByName already returns selected managed device fields.
+                    foreach ($device in $deviceSummaries) {
+                        if (-not $device) {
+                            continue
+                        }
+
+                        # Map to public output contract.
+                        ConvertTo-IntuneDeviceSummary -Device $device
+                    }
                 }
             }
 

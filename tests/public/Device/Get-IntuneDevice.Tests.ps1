@@ -101,6 +101,41 @@ Describe 'Get-IntuneDevice' {
             Assert-MockCalled -CommandName 'Invoke-GraphGet' -Times 0 -Exactly
         }
 
+        It 'Should accept multiple DeviceName values and resolve each name' {
+            $secondSummary = [PSCustomObject]@{
+                id                = 'a1111111-b222-c333-d444-e55555555555'
+                deviceName        = 'DEVICE-099'
+                userPrincipalName = 'another.user@contoso.com'
+                manufacturer      = 'HP'
+                model             = 'EliteBook 840'
+                operatingSystem   = 'Windows'
+                serialNumber      = 'HP123456'
+                complianceState   = 'compliant'
+                lastSyncDateTime  = '2026-03-18T12:00:00Z'
+            }
+
+            Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith {
+                param($Name)
+                if ($Name -eq $testDeviceName) {
+                    return @($mockSummary)
+                }
+
+                if ($Name -eq 'DEVICE-099') {
+                    return @($secondSummary)
+                }
+
+                return @()
+            }
+
+            $result = Get-IntuneDevice -DeviceName @($testDeviceName, 'DEVICE-099')
+
+            $result | Should -Not -BeNullOrEmpty
+            $result.Count | Should -Be 2
+            $result[0].DeviceName | Should -Be $testDeviceName
+            $result[1].DeviceName | Should -Be 'DEVICE-099'
+            Assert-MockCalled -CommandName 'Resolve-IntuneDeviceByName' -Times 2 -Exactly
+        }
+
         It 'Should return nothing and write not found error when name has no matches' {
             Mock -CommandName 'Resolve-IntuneDeviceByName' -MockWith { return @() }
 
