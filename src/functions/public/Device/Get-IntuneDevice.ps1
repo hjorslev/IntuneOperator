@@ -36,9 +36,9 @@ function Get-IntuneDevice {
     Resolves device by name and returns summary details for each matching managed device.
 
     .EXAMPLE
-    Get-IntuneDevice -UserPrincipalName "jane.doe@contoso.com"
+    Get-IntuneDevice -UserPrincipalName `jane.doe@contoso.com`
 
-    Returns summary details for all managed devices whose primary user is jane.doe@contoso.com.
+    Returns summary details for all managed devices whose primary user is `jane.doe@contoso.com`.
 
     .INPUTS
     System.String (DeviceId, DeviceName, or UserPrincipalName via pipeline/property name)
