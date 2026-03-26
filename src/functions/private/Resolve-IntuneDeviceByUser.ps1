@@ -43,7 +43,7 @@
 
     begin {
         $baseUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
-        $select  = 'id,deviceName,userPrincipalName,manufacturer,model,operatingSystem,serialNumber,complianceState,lastSyncDateTime'
+        $select = 'id,deviceName,userPrincipalName,manufacturer,model,operatingSystem,serialNumber,complianceState,lastSyncDateTime'
     }
 
     process {
