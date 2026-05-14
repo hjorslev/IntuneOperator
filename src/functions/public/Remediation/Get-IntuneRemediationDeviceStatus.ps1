@@ -22,10 +22,10 @@
     The ID (GUID) of the device health script (remediation) to query.
     Parameter set: ById.
 
-    .PARAMETER PreRemediationJsonOutput
+    .PARAMETER ConvertPreRemediationOutput
     Parses PreRemediationOutput as JSON and adds a PreRemediationData property when valid JSON is present.
 
-    .PARAMETER PostRemediationJsonOutput
+    .PARAMETER ConvertPostRemediationOutput
     Parses PostRemediationOutput as JSON and adds a PostRemediationData property when valid JSON is present.
 
     .EXAMPLE
@@ -44,6 +44,18 @@
 
     Pipes remediations that have devices with issues into this cmdlet to get device-level detail.
 
+    .EXAMPLE
+    Get-IntuneRemediationDeviceStatus -Name 'Win | Device | All | Detection | Secure Boot Status' -ConvertPreRemediationOutput |
+        Where-Object { $null -ne $_.PreRemediationData }
+
+    Parses valid JSON found in PreRemediationOutput and exposes it as PreRemediationData.
+
+    .EXAMPLE
+    Get-IntuneRemediationDeviceStatus -Name 'Win | Device | All | Detection | Secure Boot Status' -ConvertPreRemediationOutput -ConvertPostRemediationOutput |
+        Select-Object DeviceName, DetectionState, RemediationState, PreRemediationData, PostRemediationData
+
+    Parses valid JSON from both remediation output fields and selects the parsed data alongside device state.
+
     .INPUTS
     System.String (Name or Id via pipeline by property name)
 
@@ -59,8 +71,8 @@
     - RemediationState (string)        : Outcome of the last remediation script run
     - PreRemediationOutput (string)    : stdout captured before remediation ran
     - PostRemediationOutput (string)   : stdout captured after remediation ran
-    - PreRemediationData (object/null) : Parsed JSON from PreRemediationOutput when -PreRemediationJsonOutput is used
-    - PostRemediationData (object/null): Parsed JSON from PostRemediationOutput when -PostRemediationJsonOutput is used
+    - PreRemediationData (object/null) : Parsed JSON from PreRemediationOutput when -ConvertPreRemediationOutput is used
+    - PostRemediationData (object/null): Parsed JSON from PostRemediationOutput when -ConvertPostRemediationOutput is used
     - DetectionOutput (string)         : Detection-only script stdout
     - PreRemediationError (string)     : stderr captured before remediation ran
     - RemediationError (string)        : stderr from the remediation script
@@ -96,12 +108,10 @@
         [string]$Id,
 
         [Parameter(HelpMessage = 'Parse pre-remediation output as JSON and add PreRemediationData')]
-        [Alias('ConvertPreRemediationOutput')]
-        [switch]$PreRemediationJsonOutput,
+        [switch]$ConvertPreRemediationOutput,
 
         [Parameter(HelpMessage = 'Parse post-remediation output as JSON and add PostRemediationData')]
-        [Alias('ConvertPostRemediationOutput')]
-        [switch]$PostRemediationJsonOutput
+        [switch]$ConvertPostRemediationOutput
     )
 
     begin {
@@ -267,7 +277,7 @@
                     DetectionError        = [string]$state.detectionScriptError
                 }
 
-                if ($PreRemediationJsonOutput.IsPresent) {
+                if ($ConvertPreRemediationOutput.IsPresent) {
                     $outputObject.PreRemediationData = $null
                     if (-not [string]::IsNullOrWhiteSpace($preRemediationOutput) -and $preRemediationOutput.Trim().StartsWith('{')) {
                         try {
@@ -278,7 +288,7 @@
                     }
                 }
 
-                if ($PostRemediationJsonOutput.IsPresent) {
+                if ($ConvertPostRemediationOutput.IsPresent) {
                     $outputObject.PostRemediationData = $null
                     if (-not [string]::IsNullOrWhiteSpace($postRemediationOutput) -and $postRemediationOutput.Trim().StartsWith('{')) {
                         try {

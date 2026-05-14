@@ -117,7 +117,7 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
 
             # Act
             $result = @(
-                Get-IntuneRemediationDeviceStatus -Name $mockScriptName -PreRemediationJsonOutput -PostRemediationJsonOutput
+                Get-IntuneRemediationDeviceStatus -Name $mockScriptName -ConvertPreRemediationOutput -ConvertPostRemediationOutput
             )
 
             # Assert
@@ -174,7 +174,7 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
 
             # Act
             $result = @(
-                Get-IntuneRemediationDeviceStatus -Name $mockScriptName -PreRemediationJsonOutput -PostRemediationJsonOutput -Verbose:$false
+                Get-IntuneRemediationDeviceStatus -Name $mockScriptName -ConvertPreRemediationOutput -ConvertPostRemediationOutput -Verbose:$false
             )
 
             # Assert
