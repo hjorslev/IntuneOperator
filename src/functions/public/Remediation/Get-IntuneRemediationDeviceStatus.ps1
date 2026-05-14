@@ -22,6 +22,12 @@
     The ID (GUID) of the device health script (remediation) to query.
     Parameter set: ById.
 
+    .PARAMETER ConvertPreRemediationOutput
+    Parses PreRemediationOutput as JSON and adds a PreRemediationData property when valid JSON is present.
+
+    .PARAMETER ConvertPostRemediationOutput
+    Parses PostRemediationOutput as JSON and adds a PostRemediationData property when valid JSON is present.
+
     .EXAMPLE
     Connect-MgGraph -Scopes "DeviceManagementConfiguration.Read.All"
     Get-IntuneRemediationDeviceStatus -Name "BitLocker*"
@@ -38,6 +44,18 @@
 
     Pipes remediations that have devices with issues into this cmdlet to get device-level detail.
 
+    .EXAMPLE
+    Get-IntuneRemediationDeviceStatus -Name 'Win | Device | All | Detection | Secure Boot Status' -ConvertPreRemediationOutput |
+        Where-Object { $null -ne $_.PreRemediationData }
+
+    Parses valid JSON found in PreRemediationOutput and exposes it as PreRemediationData.
+
+    .EXAMPLE
+    Get-IntuneRemediationDeviceStatus -Name 'Win | Device | All | Detection | Secure Boot Status' -ConvertPreRemediationOutput -ConvertPostRemediationOutput |
+        Select-Object DeviceName, DetectionState, RemediationState, PreRemediationData, PostRemediationData
+
+    Parses valid JSON from both remediation output fields and selects the parsed data alongside device state.
+
     .INPUTS
     System.String (Name or Id via pipeline by property name)
 
@@ -53,6 +71,8 @@
     - RemediationState (string)        : Outcome of the last remediation script run
     - PreRemediationOutput (string)    : stdout captured before remediation ran
     - PostRemediationOutput (string)   : stdout captured after remediation ran
+    - PreRemediationData (object/null) : Parsed JSON from PreRemediationOutput when -ConvertPreRemediationOutput is used
+    - PostRemediationData (object/null): Parsed JSON from PostRemediationOutput when -ConvertPostRemediationOutput is used
     - DetectionOutput (string)         : Detection-only script stdout
     - PreRemediationError (string)     : stderr captured before remediation ran
     - RemediationError (string)        : stderr from the remediation script
@@ -85,7 +105,13 @@
         )]
         [ValidatePattern('^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$')]
         [Alias('RemediationId')]
-        [string]$Id
+        [string]$Id,
+
+        [Parameter(HelpMessage = 'Parse pre-remediation output as JSON and add PreRemediationData')]
+        [switch]$ConvertPreRemediationOutput,
+
+        [Parameter(HelpMessage = 'Parse post-remediation output as JSON and add PostRemediationData')]
+        [switch]$ConvertPostRemediationOutput
     )
 
     begin {
@@ -229,8 +255,12 @@
                     }
                 }
 
-                # Cast Graph fields to predictable output types for downstream filtering/export.
-                [PSCustomObject]@{
+                # Capture the raw script output once so optional JSON parsing stays local.
+                $preRemediationOutput = [string]$state.preRemediationDetectionScriptOutput
+                $postRemediationOutput = [string]$state.postRemediationDetectionScriptOutput
+
+                # Build the output object in-order and extend it only when JSON parsing is requested.
+                $outputObject = [ordered]@{
                     RemediationName       = $remediationName
                     RemediationId         = $remediationId
                     DeviceId              = $deviceId
@@ -239,13 +269,38 @@
                     LastStateUpdate       = $lastUpdate
                     DetectionState        = [string]$state.detectionState
                     RemediationState      = [string]$state.remediationState
-                    PreRemediationOutput  = [string]$state.preRemediationDetectionScriptOutput
-                    PostRemediationOutput = [string]$state.postRemediationDetectionScriptOutput
+                    PreRemediationOutput  = $preRemediationOutput
+                    PostRemediationOutput = $postRemediationOutput
                     DetectionOutput       = [string]$state.detectionScriptOutput
                     PreRemediationError   = [string]$state.preRemediationDetectionScriptError
                     RemediationError      = [string]$state.remediationScriptError
                     DetectionError        = [string]$state.detectionScriptError
                 }
+
+                if ($ConvertPreRemediationOutput.IsPresent) {
+                    $outputObject.PreRemediationData = $null
+                    if (-not [string]::IsNullOrWhiteSpace($preRemediationOutput) -and $preRemediationOutput.Trim().StartsWith('{')) {
+                        try {
+                            $outputObject.PreRemediationData = $preRemediationOutput | ConvertFrom-Json -ErrorAction Stop
+                        } catch {
+                            Write-Verbose -Message "Failed to parse pre-remediation JSON for device '$deviceName'."
+                        }
+                    }
+                }
+
+                if ($ConvertPostRemediationOutput.IsPresent) {
+                    $outputObject.PostRemediationData = $null
+                    if (-not [string]::IsNullOrWhiteSpace($postRemediationOutput) -and $postRemediationOutput.Trim().StartsWith('{')) {
+                        try {
+                            $outputObject.PostRemediationData = $postRemediationOutput | ConvertFrom-Json -ErrorAction Stop
+                        } catch {
+                            Write-Verbose -Message "Failed to parse post-remediation JSON for device '$deviceName'."
+                        }
+                    }
+                }
+
+                # Cast Graph fields to predictable output types for downstream filtering/export.
+                [PSCustomObject]$outputObject
             }
         }
     } # Process
