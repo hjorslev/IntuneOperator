@@ -71,6 +71,120 @@ Describe 'Get-IntuneRemediationDeviceStatus' {
             $result[0].LastStateUpdate | Should -BeOfType [datetime]
         }
 
+        It 'Should add parsed remediation data when JSON output switches are used' {
+            # Arrange
+            $mockScriptId = '11f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $mockScriptName = 'Secure Boot remediation'
+
+            $mockListResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{ id = $mockScriptId; displayName = $mockScriptName }
+                )
+            }
+
+            $mockRunStatesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id                                   = 'state-json'
+                        detectionState                       = 'success'
+                        remediationState                     = 'success'
+                        lastStateUpdateDateTime              = '2026-03-12T08:00:00Z'
+                        preRemediationDetectionScriptOutput  = '{"secureBoot":false,"status":"off"}'
+                        postRemediationDetectionScriptOutput = '{"secureBoot":true,"status":"on"}'
+                        detectionScriptOutput                = $null
+                        preRemediationDetectionScriptError   = $null
+                        remediationScriptError               = $null
+                        detectionScriptError                 = $null
+                        managedDevice                        = [PSCustomObject]@{
+                            id                = 'dev-json'
+                            deviceName        = 'PC-JSON'
+                            userPrincipalName = 'json@contoso.com'
+                        }
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'deviceHealthScripts\?\$select=id,displayName$') {
+                    return $mockListResponse
+                }
+                if ($Uri -match '/deviceHealthScripts/.+/deviceRunStates') {
+                    return $mockRunStatesResponse
+                }
+                throw "Unexpected URI: $Uri"
+            }
+
+            # Act
+            $result = @(
+                Get-IntuneRemediationDeviceStatus -Name $mockScriptName -PreRemediationJsonOutput -PostRemediationJsonOutput
+            )
+
+            # Assert
+            $result.Count | Should -Be 1
+            $result[0].PreRemediationData | Should -Not -BeNullOrEmpty
+            $result[0].PreRemediationData.secureBoot | Should -BeFalse
+            $result[0].PostRemediationData | Should -Not -BeNullOrEmpty
+            $result[0].PostRemediationData.secureBoot | Should -BeTrue
+        }
+
+        It 'Should leave parsed remediation data null when JSON parsing fails' {
+            # Arrange
+            $mockScriptId = '12f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
+            $mockScriptName = 'Broken JSON remediation'
+
+            $mockListResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{ id = $mockScriptId; displayName = $mockScriptName }
+                )
+            }
+
+            $mockRunStatesResponse = [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        id                                   = 'state-bad-json'
+                        detectionState                       = 'fail'
+                        remediationState                     = 'skipped'
+                        lastStateUpdateDateTime              = '2026-03-12T08:00:00Z'
+                        preRemediationDetectionScriptOutput  = '{"secureBoot":'
+                        postRemediationDetectionScriptOutput = 'plain text'
+                        detectionScriptOutput                = $null
+                        preRemediationDetectionScriptError   = $null
+                        remediationScriptError               = $null
+                        detectionScriptError                 = $null
+                        managedDevice                        = [PSCustomObject]@{
+                            id                = 'dev-bad-json'
+                            deviceName        = 'PC-BAD-JSON'
+                            userPrincipalName = 'broken@contoso.com'
+                        }
+                    }
+                )
+            }
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                if ($Uri -match 'deviceHealthScripts\?\$select=id,displayName$') {
+                    return $mockListResponse
+                }
+                if ($Uri -match '/deviceHealthScripts/.+/deviceRunStates') {
+                    return $mockRunStatesResponse
+                }
+                throw "Unexpected URI: $Uri"
+            }
+
+            # Act
+            $result = @(
+                Get-IntuneRemediationDeviceStatus -Name $mockScriptName -PreRemediationJsonOutput -PostRemediationJsonOutput -Verbose:$false
+            )
+
+            # Assert
+            $result.Count | Should -Be 1
+            $result[0].PSObject.Properties.Name | Should -Contain 'PreRemediationData'
+            $result[0].PSObject.Properties.Name | Should -Contain 'PostRemediationData'
+            $result[0].PreRemediationData | Should -Be $null
+            $result[0].PostRemediationData | Should -Be $null
+        }
+
         It 'Should return multiple rows when multiple devices have run states' {
             # Arrange
             $mockScriptId = 'a1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
