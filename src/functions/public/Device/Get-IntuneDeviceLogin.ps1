@@ -66,6 +66,9 @@ function Get-IntuneDeviceLogin {
     - UserPrincipalName (string)
     - LastLogonDateTime (datetime)
 
+    .LINK
+    https://psmodule.io/IntuneOperator/Functions/Device/Get-IntuneDeviceLogin/
+
     .NOTES
     Author: FHN & ChatGPT & GitHub Copilot
     - Uses /beta Graph endpoints because usersLoggedOn is exposed there.

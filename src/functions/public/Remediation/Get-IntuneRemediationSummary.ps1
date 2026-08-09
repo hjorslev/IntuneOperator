@@ -28,6 +28,9 @@
     - IssueRecurred (int)
     - TotalRemediated (int)
 
+    .LINK
+    https://psmodule.io/IntuneOperator/Functions/Remediation/Get-IntuneRemediationSummary/
+
     .NOTES
     Author: FHN & GitHub Copilot
     - Uses /beta Graph endpoints.
