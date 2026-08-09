@@ -55,6 +55,9 @@ function Get-IntuneDevice {
     - Compliance (string)
     - LastSyncDateTime (datetime)
 
+    .LINK
+    https://psmodule.io/IntuneOperator/Functions/Device/Get-IntuneDevice/
+
     .NOTES
     Author: FHN & GitHub Copilot
     Uses /beta Graph endpoints for managed device properties.
