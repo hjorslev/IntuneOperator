@@ -56,7 +56,7 @@ function Get-IntuneDevice {
     - LastSyncDateTime (datetime)
 
     .LINK
-    https://psmodule.io/IntuneOperator/Functions/Device/Get-IntuneDevice/
+    https://hjorslev.github.io/IntuneOperator/Functions/Device/Get-IntuneDevice/
 
     .NOTES
     Author: FHN & GitHub Copilot

@@ -67,7 +67,7 @@ function Get-IntuneDeviceLogin {
     - LastLogonDateTime (datetime)
 
     .LINK
-    https://psmodule.io/IntuneOperator/Functions/Device/Get-IntuneDeviceLogin/
+    https://hjorslev.github.io/IntuneOperator/Functions/Device/Get-IntuneDeviceLogin/
 
     .NOTES
     Author: FHN & ChatGPT & GitHub Copilot

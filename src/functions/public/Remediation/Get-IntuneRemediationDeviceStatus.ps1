@@ -79,7 +79,7 @@
     - DetectionError (string)          : stderr from the detection script
 
     .LINK
-    https://psmodule.io/IntuneOperator/Functions/Remediation/Get-IntuneRemediationDeviceStatus/
+    https://hjorslev.github.io/IntuneOperator/Functions/Remediation/Get-IntuneRemediationDeviceStatus/
 
     .NOTES
     Author: FHN & GitHub Copilot

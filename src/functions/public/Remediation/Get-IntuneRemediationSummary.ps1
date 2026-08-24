@@ -29,7 +29,7 @@
     - TotalRemediated (int)
 
     .LINK
-    https://psmodule.io/IntuneOperator/Functions/Remediation/Get-IntuneRemediationSummary/
+    https://hjorslev.github.io/IntuneOperator/Functions/Remediation/Get-IntuneRemediationSummary/
 
     .NOTES
     Author: FHN & GitHub Copilot
