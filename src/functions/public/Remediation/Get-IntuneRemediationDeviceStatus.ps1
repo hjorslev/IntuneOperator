@@ -1,4 +1,5 @@
-﻿function Get-IntuneRemediationDeviceStatus {
+﻿#SkipTest:PublicHelpLink:GitHub Pages is the canonical documentation site for this module
+function Get-IntuneRemediationDeviceStatus {
     <#
     .SYNOPSIS
     Retrieves per-device run state and pre/post remediation output for a specific Intune proactive remediation.

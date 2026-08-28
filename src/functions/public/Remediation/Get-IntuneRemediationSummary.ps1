@@ -1,4 +1,5 @@
-﻿function Get-IntuneRemediationSummary {
+﻿#SkipTest:PublicHelpLink:GitHub Pages is the canonical documentation site for this module
+function Get-IntuneRemediationSummary {
     <#
     .SYNOPSIS
     Retrieves remediation summary statistics for all Intune proactive remediations.
