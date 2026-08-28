@@ -1,4 +1,5 @@
-﻿#Requires -Modules @{ ModuleName = 'Microsoft.Graph.Authentication'; ModuleVersion = '2.28.0' }
+﻿#SkipTest:PublicHelpLink:GitHub Pages is the canonical documentation site for this module
+#Requires -Modules @{ ModuleName = 'Microsoft.Graph.Authentication'; ModuleVersion = '2.28.0' }
 
 function Get-IntuneDevice {
     <#
@@ -54,6 +55,9 @@ function Get-IntuneDevice {
     - SerialNumber (string)
     - Compliance (string)
     - LastSyncDateTime (datetime)
+
+    .LINK
+    https://hjorslev.github.io/IntuneOperator/Functions/Device/Get-IntuneDevice/
 
     .NOTES
     Author: FHN & GitHub Copilot

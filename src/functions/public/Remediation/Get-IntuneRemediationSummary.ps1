@@ -1,4 +1,5 @@
-﻿function Get-IntuneRemediationSummary {
+﻿#SkipTest:PublicHelpLink:GitHub Pages is the canonical documentation site for this module
+function Get-IntuneRemediationSummary {
     <#
     .SYNOPSIS
     Retrieves remediation summary statistics for all Intune proactive remediations.
@@ -27,6 +28,9 @@
     - IssueFixed (int)
     - IssueRecurred (int)
     - TotalRemediated (int)
+
+    .LINK
+    https://hjorslev.github.io/IntuneOperator/Functions/Remediation/Get-IntuneRemediationSummary/
 
     .NOTES
     Author: FHN & GitHub Copilot

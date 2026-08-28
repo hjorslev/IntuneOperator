@@ -1,4 +1,5 @@
-﻿function Get-IntuneRemediationDeviceStatus {
+﻿#SkipTest:PublicHelpLink:GitHub Pages is the canonical documentation site for this module
+function Get-IntuneRemediationDeviceStatus {
     <#
     .SYNOPSIS
     Retrieves per-device run state and pre/post remediation output for a specific Intune proactive remediation.
@@ -77,6 +78,9 @@
     - PreRemediationError (string)     : stderr captured before remediation ran
     - RemediationError (string)        : stderr from the remediation script
     - DetectionError (string)          : stderr from the detection script
+
+    .LINK
+    https://hjorslev.github.io/IntuneOperator/Functions/Remediation/Get-IntuneRemediationDeviceStatus/
 
     .NOTES
     Author: FHN & GitHub Copilot
