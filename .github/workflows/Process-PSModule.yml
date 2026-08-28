@@ -29,4 +29,4 @@ jobs:
   Process-PSModule:
     uses: PSModule/Process-PSModule/.github/workflows/workflow.yml@b11b310e461f08ee99055b0827ef7909dea7110a # v6.1.14
     secrets:
-      APIKEY: ${{ secrets.APIKEY }}
+      APIKey: ${{ secrets.PSGALLERY_API_KEY || secrets.APIKEY || secrets.APIKey }}
