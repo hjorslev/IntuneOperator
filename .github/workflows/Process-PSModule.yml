@@ -29,4 +29,6 @@ jobs:
   Process-PSModule:
     uses: PSModule/Process-PSModule/.github/workflows/workflow.yml@8fa878aabbbafe5981e39825cb196d295cdf273e # v8.0.5
     secrets:
-      APIKey: ${{ secrets.PSGALLERY_API_KEY || secrets.APIKEY || secrets.APIKey }}
+      PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+      GitHubAppClientId: ${{ secrets.SHELLY_CLIENT_ID }}
+      GitHubAppPrivateKey: ${{ secrets.SHELLY_PRIVATE_KEY }}
