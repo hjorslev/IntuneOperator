@@ -27,6 +27,7 @@ permissions:
 
 jobs:
   Process-PSModule:
+    if: ${{ secrets.SHELLY_CLIENT_ID != '' && secrets.SHELLY_PRIVATE_KEY != '' }}
     uses: PSModule/Process-PSModule/.github/workflows/workflow.yml@105e4dcefe1946782066aa50a5c7d3658319895a # v8.0.7
     secrets:
       PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
