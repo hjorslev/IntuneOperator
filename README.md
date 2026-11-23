@@ -26,6 +26,8 @@ Here is a list of example that are typical use cases for the module.
 
 As of March 2026, the module has four cmdlets: `Get-IntuneDeviceLogin`, `Get-IntuneLapsPassword`, `Get-IntuneRemediationSummary` and `Get-IntuneRemediationDeviceStatus`.
 
+`Get-IntuneDeviceLogin` returns results sorted by `LastLogonDateTime`, newest first.
+
 ```powershell
 Get-IntuneDeviceLogin -DeviceName PC-001
 ```

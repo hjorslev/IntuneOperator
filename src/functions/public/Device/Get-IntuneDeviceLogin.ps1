@@ -12,6 +12,7 @@ function Get-IntuneDeviceLogin {
     matching managed devices (`deviceName eq '<name>'`) and returns logon info for each match.
     When given a UserPrincipalName or UserId, searches all managed devices and returns only those where
     the specified user has logged in.
+    Results are sorted by LastLogonDateTime, newest first, across all pipeline input.
 
     Requires an authenticated Graph session with appropriate scopes.
 
@@ -121,6 +122,7 @@ function Get-IntuneDeviceLogin {
 
     begin {
         $baseUri = 'https://graph.microsoft.com/beta/deviceManagement/managedDevices'
+        $results = [System.Collections.Generic.List[PSCustomObject]]::new()
     }
 
     process {
@@ -173,14 +175,14 @@ function Get-IntuneDeviceLogin {
 
                 foreach ($entry in $device.usersLoggedOn) {
                     $user = Resolve-EntraUserById -UserId $entry.userId
-                    [PSCustomObject]@{
+                    $results.Add([PSCustomObject]@{
                         DeviceName        = $device.deviceName
                         OperatingSystem   = $device.operatingSystem
                         UserPrincipalName = $user.userPrincipalName
                         DeviceId          = $device.id
                         UserId            = $entry.userId
                         LastLogonDateTime = [datetime]$entry.lastLogOnDateTime
-                    }
+                    })
                 }
             }
 
@@ -275,14 +277,14 @@ function Get-IntuneDeviceLogin {
 
                     foreach ($entry in $device.usersLoggedOn) {
                         $user = Resolve-EntraUserById -UserId $entry.userId
-                        [PSCustomObject]@{
+                        $results.Add([PSCustomObject]@{
                             DeviceName        = $device.deviceName
                             OperatingSystem   = $device.operatingSystem
                             UserPrincipalName = $user.userPrincipalName
                             DeviceId          = $device.id
                             UserId            = $entry.userId
                             LastLogonDateTime = [datetime]$entry.lastLogOnDateTime
-                        }
+                        })
                     }
                 }
             }
@@ -363,14 +365,14 @@ function Get-IntuneDeviceLogin {
 
                         $matchCount++
                         $user = Resolve-EntraUserById -UserId $targetUserId
-                        [PSCustomObject]@{
+                        $results.Add([PSCustomObject]@{
                             DeviceName        = $device.deviceName
                             OperatingSystem   = $device.operatingSystem
                             UserPrincipalName = $user.userPrincipalName
                             DeviceId          = $device.id
                             UserId            = $targetUserId
                             LastLogonDateTime = $logonTimestamp
-                        }
+                        })
                     }
                 }
 
@@ -380,4 +382,8 @@ function Get-IntuneDeviceLogin {
             }
         }
     } # Process
+
+    end {
+        $results | Sort-Object -Property LastLogonDateTime -Descending
+    }
 } # Cmdlet

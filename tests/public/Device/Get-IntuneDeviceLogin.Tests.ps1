@@ -78,11 +78,11 @@ Describe 'Get-IntuneDeviceLogin' {
                 usersLoggedOn = @(
                     [PSCustomObject]@{
                         userId            = $userId1
-                        lastLogOnDateTime = '2024-03-05T10:30:00Z'
+                        lastLogOnDateTime = '2024-03-04T09:15:00Z'
                     },
                     [PSCustomObject]@{
                         userId            = $userId2
-                        lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                        lastLogOnDateTime = '2024-03-05T10:30:00Z'
                     }
                 )
             }
@@ -108,8 +108,8 @@ Describe 'Get-IntuneDeviceLogin' {
 
             # Assert
             $results.Count | Should -Be 2
-            $results[0].UserPrincipalName | Should -Be $upn1
-            $results[1].UserPrincipalName | Should -Be $upn2
+            $results[0].UserPrincipalName | Should -Be $upn2
+            $results[1].UserPrincipalName | Should -Be $upn1
         }
 
         It 'Should return nothing if no users are logged on' {
@@ -324,8 +324,8 @@ Describe 'Get-IntuneDeviceLogin' {
 
             # Assert
             $results.Count | Should -Be 2
-            $results[0].DeviceId | Should -Be $deviceId1
-            $results[1].DeviceId | Should -Be $deviceId2
+            $results[0].DeviceId | Should -Be $deviceId2
+            $results[1].DeviceId | Should -Be $deviceId1
         }
 
         It 'Should work with DeviceName alias "Name"' {
@@ -474,6 +474,40 @@ Describe 'Get-IntuneDeviceLogin' {
     }
 
     Context 'Pipeline and property binding' {
+        It 'Should sort results across pipeline inputs even when a device has no logons' {
+            $devices = @(
+                [PSCustomObject]@{
+                    id            = 'c0000000-0000-0000-0000-000000000001'
+                    deviceName    = 'OLD'
+                    usersLoggedOn = @([PSCustomObject]@{ userId = 'user'; lastLogOnDateTime = '2024-03-04T09:15:00Z' })
+                },
+                [PSCustomObject]@{
+                    id            = 'c0000000-0000-0000-0000-000000000002'
+                    deviceName    = 'EMPTY'
+                    usersLoggedOn = @()
+                },
+                [PSCustomObject]@{
+                    id            = 'c0000000-0000-0000-0000-000000000003'
+                    deviceName    = 'NEW'
+                    usersLoggedOn = @([PSCustomObject]@{ userId = 'user'; lastLogOnDateTime = '2024-03-05T10:30:00Z' })
+                }
+            )
+
+            Mock -CommandName 'Invoke-GraphGet' -MockWith {
+                param([string]$Uri)
+                $devices | Where-Object { $Uri -like "*/$($_.id)" }
+            }
+            Mock -CommandName 'Resolve-EntraUserById' -MockWith {
+                [PSCustomObject]@{ userPrincipalName = 'user@contoso.com' }
+            }
+
+            $results = @($devices | Select-Object -Property @{ Name = 'DeviceId'; Expression = { $_.id } } | Get-IntuneDeviceLogin)
+
+            $results.Count | Should -Be 2
+            $results[0].DeviceName | Should -Be 'NEW'
+            $results[1].DeviceName | Should -Be 'OLD'
+        }
+
         It 'Should accept DeviceId from pipeline' {
             # Arrange
             $testDeviceId = 'c1f5d1d7-2d2b-4d8c-9f0a-0d2a3d1e2f3a'
@@ -664,7 +698,7 @@ Describe 'Get-IntuneDeviceLogin' {
                         usersLoggedOn = @(
                             [PSCustomObject]@{
                                 userId            = $testUserId
-                                lastLogOnDateTime = '2024-03-04T09:15:00Z'
+                                lastLogOnDateTime = '2024-03-06T09:15:00Z'
                             }
                         )
                     }
@@ -686,8 +720,8 @@ Describe 'Get-IntuneDeviceLogin' {
 
             # Assert
             $results.Count | Should -Be 2
-            $results[0].DeviceId | Should -Be $testDeviceId1
-            $results[1].DeviceId | Should -Be $testDeviceId2
+            $results[0].DeviceId | Should -Be $testDeviceId2
+            $results[1].DeviceId | Should -Be $testDeviceId1
         }
 
         It 'Should return nothing if user has not logged into any devices' {
